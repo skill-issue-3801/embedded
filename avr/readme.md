@@ -5,7 +5,6 @@ This is simple framework for programming AVRs directly from the command line.
 To install the required tools to use this framework call this command
 ```
 sudo apt-get install gcc-avr binutils-avr avr-libc gdb-avr avrdude
-
 ```
 
 ## Editing source files
