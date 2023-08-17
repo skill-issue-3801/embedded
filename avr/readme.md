@@ -25,7 +25,7 @@ make upload
 This will upload the code into the eeprom of the chip. Make sure this is only called when the chip is powered to avoid any unnessisary brownouts or programming issues. 
 
 ## Hardware Tools
-[USBAsp](https://www.jaycar.com.au/duinotech-isp-programmer-for-arduino-and-avr/p/XC4627?srsltid=AfmBOopno6gbHdWid5sdpq6BIN-Ot75pYsKYhjs1qNAAToFplJtIXTv-FhY)
-[10 Pin to 6 Pin Adaptor](https://www.jaycar.com.au/duinotech-isp-programmer-for-arduino-and-avr/p/XC4627?srsltid=AfmBOopno6gbHdWid5sdpq6BIN-Ot75pYsKYhjs1qNAAToFplJtIXTv-FhY)
-[Seeduino Xiao](https://core-electronics.com.au/seeeduino-xiao-arduino-microcontroller-samd21-cortex-m0.html?gclid=CjwKCAjwivemBhBhEiwAJxNWN7in_OUIOlC-F1lFntq9xvLway6mloWmoeeCi0XKb5lZjFlZeVw8BxoCzhsQAvD_BwE)
- * [Polyglot Turtle Library] (https://github.com/jeremyherbert/polyglot-turtle-xiao)
+* [USBAsp](https://www.jaycar.com.au/duinotech-isp-programmer-for-arduino-and-avr/p/XC4627?srsltid=AfmBOopno6gbHdWid5sdpq6BIN-Ot75pYsKYhjs1qNAAToFplJtIXTv-FhY)
+* [10 Pin to 6 Pin Adaptor](https://www.jaycar.com.au/duinotech-isp-programmer-for-arduino-and-avr/p/XC4627?srsltid=AfmBOopno6gbHdWid5sdpq6BIN-Ot75pYsKYhjs1qNAAToFplJtIXTv-FhY)
+* [Seeduino Xiao](https://core-electronics.com.au/seeeduino-xiao-arduino-microcontroller-samd21-cortex-m0.html?gclid=CjwKCAjwivemBhBhEiwAJxNWN7in_OUIOlC-F1lFntq9xvLway6mloWmoeeCi0XKb5lZjFlZeVw8BxoCzhsQAvD_BwE)
+  * [Polyglot Turtle Library](https://github.com/jeremyherbert/polyglot-turtle-xiao)
