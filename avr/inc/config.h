@@ -3,4 +3,4 @@
 
 #define F_CPU 8000000UL
 
-#endif /* CONFIG_H_ */
+#endif CONFIG_H_
