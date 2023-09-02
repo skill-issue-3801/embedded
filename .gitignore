@@ -1,6 +1,2 @@
 # STM32 file blocks
-stm32/.settings
 stm32/Debug
-stm32/Drivers
-stm32/*.launch
-stm32/*ld
