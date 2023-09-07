@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "event_manager.h"
+#include "serial_manager.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -52,10 +53,22 @@ const osThreadAttr_t defaultTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
+/* Definitions for myQueue01 */
+osMessageQueueId_t myQueue01Handle;
+const osMessageQueueAttr_t myQueue01_attributes = {
+  .name = "myQueue01"
+};
 /* USER CODE BEGIN PV */
 osThreadId_t eventManagerHandle;
 const osThreadAttr_t eventManager_attributes = {
   .name = "eventManager",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
+
+osThreadId_t serialManagerHandle;
+const osThreadAttr_t serialManager_attributes = {
+  .name = "serialManager",
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
@@ -109,6 +122,7 @@ int main(void)
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
   ret |= eventManagerInit();
+  ret |= serialManagerInit();
 
   if (ret)
 	  badCustomInit();
@@ -129,6 +143,10 @@ int main(void)
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
+  /* Create the queue(s) */
+  /* creation of myQueue01 */
+  myQueue01Handle = osMessageQueueNew (16, sizeof(uint16_t), &myQueue01_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -140,6 +158,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   eventManagerHandle = osThreadNew(eventManagerTask, NULL, &eventManager_attributes);
+  serialManagerHandle = osThreadNew(serialManagerTask, NULL, &serialManager_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* Start scheduler */
