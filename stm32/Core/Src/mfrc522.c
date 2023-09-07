@@ -11,6 +11,7 @@
 #include "mfrc522_reg.h"
 #include "main.h"
 
+extern I2C_HandleTypeDef hi2c1;
 
 int mfrc522_write_reg(uint8_t addr, uint8_t data) {
 	int ret = HAL_OK;
