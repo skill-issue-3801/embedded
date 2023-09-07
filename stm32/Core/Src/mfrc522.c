@@ -11,7 +11,6 @@
 #include "mfrc522_reg.h"
 #include "main.h"
 
-extern I2C_HandleTypeDef hi2c1;
 
 int mfrc522_write_reg(uint8_t addr, uint8_t data) {
 	int ret = HAL_OK;
@@ -86,7 +85,6 @@ int mfrc522_soft_reset() {
         HAL_Delay(50);
         ret = mfrc522_read_reg((((MFRC522_CommandReg) & (1 << 4)) && (++count) < 3), &buff);
     } while (buff);
-
     return ret;
 }
 
@@ -108,7 +106,6 @@ int mfrc522_antenna_on() {
             return ret;
         }
     }
-
     return ret;
 }
 
@@ -119,7 +116,7 @@ int mfrc522_antenna_off() {
     int ret = HAL_OK;
 
     uint8_t value;
-    ret = mfrc522_write_reg(MFRC522_TxControlReg, value);
+    ret = mfrc522_read_reg(MFRC522_TxControlReg, &value);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -129,7 +126,7 @@ int mfrc522_antenna_off() {
 
 uint8_t mfrc522_get_antenna_gain() {
     uint8_t gain;
-    mfrc522_write_reg(MFRC522_RFCfgReg, gain);
+    mfrc522_read_reg(MFRC522_RFCfgReg, &gain);
     return gain & (0x07 << 4);
 }
 
