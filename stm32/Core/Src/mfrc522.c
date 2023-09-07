@@ -11,6 +11,7 @@
 #include "mfrc522_reg.h"
 #include "main.h"
 
+extern I2C_HandleTypeDef hi2c1;
 
 int mfrc522_write_reg(uint8_t addr, uint8_t data) {
 	int ret = HAL_OK;
@@ -76,10 +77,17 @@ int mfrc522_set_reg_mask(uint8_t addr, uint8_t mask) {
 int mfrc522_soft_reset() {
     mfrc522_write_reg(MFRC522_CommandReg, MFRC522_CMD_SoftReset);
 
+    int ret = 0;
     uint8_t count = 0;
+    uint8_t buff = 0;
+
+
     do {
-        HAL_delay(50);
-    } while ((mfrc522_read_reg(MFRC522_CommandReg) & (1 << 4)) && (++count) < 3);
+        HAL_Delay(50);
+        ret = mfrc522_read_reg((((MFRC522_CommandReg) & (1 << 4)) && (++count) < 3), &buff);
+    } while (buff);
+
+    return ret;
 }
 
 /*
@@ -90,7 +98,7 @@ int mfrc522_antenna_on() {
     int ret = HAL_OK;
 
     uint8_t value;
-    ret = mfrc522_read_reg(MFRC522_TxControllReg, &value);
+    ret = mfrc522_read_reg(MFRC522_TxControlReg, &value);
     if (ret != HAL_OK) {
         return ret;
     }
@@ -100,6 +108,8 @@ int mfrc522_antenna_on() {
             return ret;
         }
     }
+
+    return ret;
 }
 
 /*
@@ -109,17 +119,17 @@ int mfrc522_antenna_off() {
     int ret = HAL_OK;
 
     uint8_t value;
-    ret = mfrc_read_reg(MFRC522_TxControlReg, &value);
+    ret = mfrc522_write_reg(MFRC522_TxControlReg, value);
     if (ret != HAL_OK) {
         return ret;
     }
-    ret = mfrc_write_reg(MFRC522_TxControlReg, value & ~0x03); 
+    ret = mfrc522_write_reg(MFRC522_TxControlReg, value & ~0x03);
     return ret;
 }
 
 uint8_t mfrc522_get_antenna_gain() {
     uint8_t gain;
-    mfrc_read_reg(MFRC522_RFCfgReg, &gain);
+    mfrc522_write_reg(MFRC522_RFCfgReg, gain);
     return gain & (0x07 << 4);
 }
 

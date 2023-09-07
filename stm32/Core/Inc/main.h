@@ -71,6 +71,18 @@ void Error_Handler(void);
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
 #define TCK_GPIO_Port GPIOA
+#define PB_PURPLE_Pin GPIO_PIN_15
+#define PB_PURPLE_GPIO_Port GPIOA
+#define PB_PURPLE_EXTI_IRQn EXTI15_10_IRQn
+#define PB_GREEN_Pin GPIO_PIN_10
+#define PB_GREEN_GPIO_Port GPIOC
+#define PB_GREEN_EXTI_IRQn EXTI15_10_IRQn
+#define PB_YELLOW_Pin GPIO_PIN_11
+#define PB_YELLOW_GPIO_Port GPIOC
+#define PB_YELLOW_EXTI_IRQn EXTI15_10_IRQn
+#define PB_ORANGE_Pin GPIO_PIN_12
+#define PB_ORANGE_GPIO_Port GPIOC
+#define PB_ORANGE_EXTI_IRQn EXTI15_10_IRQn
 #define SWO_Pin GPIO_PIN_3
 #define SWO_GPIO_Port GPIOB
 /* USER CODE BEGIN Private defines */
