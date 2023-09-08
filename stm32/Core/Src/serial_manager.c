@@ -9,8 +9,7 @@
 #include <serial_manager.h>
 #include "FreeRTOS.h"
 #include "queue.h"
-#include "event_groups.h"
-#include "cmsis_os2.h"
+
 /* Other function dependencies */
 #include "stm32l4xx_hal.h"
 
@@ -22,7 +21,6 @@ extern UART_HandleTypeDef  huart2;
 
 /* Private Variables */
 QueueHandle_t xQueue;
-osMessageQueueId_t newQueue;
 
 /* ---------- Functions ---------- */
 /*
@@ -32,8 +30,8 @@ osMessageQueueId_t newQueue;
  */
 int serialManagerInit(void) {
 
-	newQueue = osMessageQueueNew (QUEUE_LEN, sizeof(struct UartMsg), NULL);
-	if (newQueue == NULL)
+	xQueue = xQueueCreate(QUEUE_LEN, sizeof(struct UartMsg));
+	if (xQueue == NULL)
 		return -1;
 	return 0;
 }
@@ -48,11 +46,11 @@ int serialManagerInit(void) {
 void serialManagerTask (void* argument) {
 
 	struct UartMsg msg={0};
-	osStatus_t ret;
+	BaseType_t ret;
 
 	for (;;) {
-		ret = osMessageQueueGet(newQueue, &msg, NULL, 200);
-		if (ret == osErrorTimeout)
+		ret = xQueueReceive(xQueue, (void*)&msg, 200);
+		if (!ret)
 			continue;
 		if (msg.msgID == MSG_BTN)
 			serialParseButton(&msg);
@@ -72,7 +70,7 @@ void serialSendButtonMessage (char button_index) {
 	msg.msgData[0] = button_index;
 	msg.msgDataLen = 1;
 
-	osMessageQueuePut(newQueue, &msg, 0, 200);
+	xQueueSend(xQueue, (void*)&msg, 200);
 }
 
 
