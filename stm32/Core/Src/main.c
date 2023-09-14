@@ -62,7 +62,7 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+uint8_t buf[64];
 /* USER CODE END 0 */
 
 /**
@@ -81,7 +81,6 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-  TM_MFRC522_Init();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -96,20 +95,20 @@ int main(void)
   MX_USART2_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-
+  //TM_MFRC522_Init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  	  char buf[50];
-  	  memset(buf, 0, 50);
 
+  	memset(buf, 0, 64);
+  	TM_MFRC522_SelfTest(buf);
+  	HAL_UART_Transmit(&huart2, buf, (sizeof(char) * 64), HAL_MAX_DELAY);
   while (1)
   {
 	  //sprintf(buf, "hello\r\n");
 	  //buf[0] = 'k';
-	  TM_MFRC522_Read(0, buf);
-	  HAL_UART_Transmit(&huart2, buf, (sizeof(char) * 2), HAL_MAX_DELAY);
+
 	  HAL_Delay(500);
     /* USER CODE END WHILE */
 

@@ -27,8 +27,11 @@ void TM_MFRC522_Init(void) {
 	TM_MFRC522_Reset();
 
 	TM_MFRC522_WriteRegister(MFRC522_REG_T_MODE, 0x8D);
+
 	TM_MFRC522_WriteRegister(MFRC522_REG_T_PRESCALER, 0x3E);
-	TM_MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);           
+
+	TM_MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_L, 30);
+
 	TM_MFRC522_WriteRegister(MFRC522_REG_T_RELOAD_H, 0);
 
 	/* 48dB gain */
@@ -392,6 +395,37 @@ TM_MFRC522_Status_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData) {
 	return status;
 }
 
+void TM_MFRC522_DoCmd(uint8_t cmd) {
+	TM_MFRC522_WriteRegister(MFRC522_REG_COMMAND, cmd);
+}
+
+void TM_MFRC522_FlushBuffer(void) {
+	//Write 1 to FlushBuffer bit
+	TM_MFRC522_WriteRegister(MFRC522_REG_FIFO_LEVEL, 0x80);
+}
+
+void TM_MFRC522_WriteBuffer(uint8_t *data, uint16_t ulen) {
+	for (uint16_t i = 0; i < ulen; i++) {
+		TM_MFRC522_WriteRegister(MFRC522_REG_FIFO_DATA, data[i]);
+	}
+}
+
+uint16_t TM_MFRC522_ReadBuffer(uint8_t *data) {
+	uint16_t ulen;
+	ulen = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_LEVEL);
+	ulen &= 0x3F;
+	for (uint16_t i = 0; i < ulen; i++) {
+		data[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
+	}
+	return ulen;
+}
+
+void TM_MFRC522_WriteMem(uint8_t data[25]) {
+	TM_MFRC522_FlushBuffer();
+	TM_MFRC522_WriteBuffer(data, 25);
+	TM_MFRC522_DoCmd(PCD_MEMSET);
+}
+
 void TM_MFRC522_Halt(void) {
 	uint16_t unLen;
 	uint8_t buff[4]; 
@@ -403,3 +437,18 @@ void TM_MFRC522_Halt(void) {
 	TM_MFRC522_ToCard(PCD_TRANSCEIVE, buff, 4, buff, &unLen);
 }
 
+uint8_t GlobData[25];
+void TM_MFRC522_SelfTest(uint8_t backData[64]) {
+
+
+	TM_MFRC522_Reset();
+
+	memset(GlobData, 0, 25);
+	TM_MFRC522_WriteMem(GlobData);
+
+	TM_MFRC522_WriteRegister(MFRC522_REG_AUTO_TEST, 0x09);
+	TM_MFRC522_WriteBuffer(GlobData, 1);
+	TM_MFRC522_DoCmd(PCD_CALCCRC);
+	TM_MFRC522_ReadBuffer(backData);
+	HAL_Delay(100);
+}

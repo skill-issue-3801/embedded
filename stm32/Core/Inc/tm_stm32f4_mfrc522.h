@@ -110,6 +110,7 @@ typedef enum {
 
 /* MFRC522 Commands */
 #define PCD_IDLE						0x00   //NO action; Cancel the current command
+#define PCD_MEMSET						0x01   //Write FIFO buffer to internal buffer
 #define PCD_AUTHENT						0x0E   //Authentication Key
 #define PCD_RECEIVE						0x08   //Receive Data
 #define PCD_TRANSMIT					0x04   //Transmit data
@@ -262,6 +263,7 @@ extern uint8_t TM_MFRC522_SelectTag(uint8_t* serNum);
 extern TM_MFRC522_Status_t TM_MFRC522_Auth(uint8_t authMode, uint8_t BlockAddr, uint8_t* Sectorkey, uint8_t* serNum);
 extern TM_MFRC522_Status_t TM_MFRC522_Read(uint8_t blockAddr, uint8_t* recvData);
 extern TM_MFRC522_Status_t TM_MFRC522_Write(uint8_t blockAddr, uint8_t* writeData);
+extern void TM_MFRC522_SelfTest(uint8_t backData[64]);
 extern void TM_MFRC522_Halt(void);
 
 #endif
