@@ -5,18 +5,61 @@
  *      Author: Isaac
  */
 
-#include <gpio.h>
+/* Function Definition Includes */
+#include <gpio_manager.h>
+#include "FreeRTOS.h"
+#include "task.h"
 #include "main.h"
 #include "event_manager.h"
 
-extern UART_HandleTypeDef  huart2;
+/* External Variables */
+extern UART_HandleTypeDef  	huart2; // Only included for debug, remove in the future please
+extern ADC_HandleTypeDef 	hadc1;
 
-/* Variables for debouncing  */
+/* Private Variables */
 uint32_t PB1_LastPress = 0;
 uint32_t PB_Green_LastPress = 0;
 uint32_t PB_Yellow_LastPress = 0;
 uint32_t PB_Orange_LastPress = 0;
 uint32_t PB_Purple_LastPress = 0;
+
+uint32_t adc_values[ADC_COUNT];
+
+/*
+ * @brief	Initialise the ADC for future GPIO interactions.
+ * @param	None.
+ * @return	0 on success, 1 otherwise
+ */
+int gpioManagerInit(void) {
+
+	if (HAL_ADCEx_Calibration_Start(&hadc1, ADC_SINGLE_ENDED))
+		return 1;
+	if (HAL_ADC_Start_DMA(&hadc1, adc_values, ADC_COUNT))
+		return 1;
+	return 0;
+}
+
+/*
+ * @brief	Task for the gpio manager. Reads the ADC values, if the value
+ * 			has changed
+ */
+void gpioManagerTask (void* argument) {
+
+	const TickType_t msDelay = 100 / portTICK_PERIOD_MS;
+
+	char output[40];
+	uint32_t val1 = 0;
+	uint32_t val2 = 0;
+
+	for (;;) {
+		val1 = adc_values[0];
+		val2 = adc_values[1];
+
+		HAL_ADC_Start_DMA(&hadc1, adc_values, ADC_COUNT);
+		vTaskDelay(msDelay);
+	}
+}
+
 
 /*
  * @brief	Interrupt callback for associated GPIO pins. Used to handle
