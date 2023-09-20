@@ -26,6 +26,7 @@
 #include "tm_stm32f4_mfrc522.h"
 #include <string.h>
 #include <stdio.h>
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -62,7 +63,6 @@ static void MX_I2C1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buf[64];
 /* USER CODE END 0 */
 
 /**
@@ -72,7 +72,7 @@ uint8_t buf[64];
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	uint8_t buf[64];
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -103,12 +103,13 @@ int main(void)
 
   	memset(buf, 0, 64);
   	TM_MFRC522_SelfTest(buf);
-  	HAL_UART_Transmit(&huart2, buf, (sizeof(char) * 64), HAL_MAX_DELAY);
+	hex_dump(buf, 64);
+
   while (1)
   {
 	  //sprintf(buf, "hello\r\n");
 	  //buf[0] = 'k';
-
+	  uart_printf("Hello world!\r\n");
 	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
@@ -301,7 +302,41 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void hex_dump(uint8_t* buffer, uint8_t len) {
+	char buf[10];
+	memset(buf, 0, 5);
+	for (int i = 0; i < len; i++) {
+		if (i % 10 == 0) {
+			sprintf(buf, "\n\r");
+			HAL_UART_Transmit(&huart2, (uint8_t*)buf, (sizeof(char) * 3), HAL_MAX_DELAY);
+		}
+		sprintf(buf, "0x%0X ", buffer[i]);
+		HAL_UART_Transmit(&huart2, (uint8_t*)buf, (sizeof(char) * 5), HAL_MAX_DELAY);
+	}
+}
 
+void uart_printf(const char *fmt, ...) {
+	char buf[100];
+	memset(buf, 0, sizeof(buf));
+
+	va_list args;
+
+	va_start(args, fmt);
+
+	vsprintf(buf, fmt, args);
+
+	va_end(args);
+
+	int i = 0;
+	while (i < 100) {
+		if (buf[i] == '\0' || buf[i] == '\n') {
+			i++;
+			break;
+		}
+		i++;
+	}
+	HAL_UART_Transmit(&huart2, (uint8_t*)buf, (sizeof(char) * i), HAL_MAX_DELAY);
+}
 /* USER CODE END 4 */
 
 /**

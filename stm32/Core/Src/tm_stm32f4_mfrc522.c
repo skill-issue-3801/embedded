@@ -410,15 +410,6 @@ void TM_MFRC522_WriteBuffer(uint8_t *data, uint16_t ulen) {
 	}
 }
 
-uint16_t TM_MFRC522_ReadBuffer(uint8_t *data) {
-	uint16_t ulen;
-	ulen = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_LEVEL);
-	ulen &= 0x3F;
-	for (uint16_t i = 0; i < ulen; i++) {
-		data[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
-	}
-	return ulen;
-}
 
 void TM_MFRC522_WriteMem(uint8_t data[25]) {
 	TM_MFRC522_FlushBuffer();
@@ -437,9 +428,18 @@ void TM_MFRC522_Halt(void) {
 	TM_MFRC522_ToCard(PCD_TRANSCEIVE, buff, 4, buff, &unLen);
 }
 
+uint16_t TM_MFRC522_ReadBuffer(uint8_t *data) {
+	uint16_t ulen;
+	ulen = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_LEVEL);
+	ulen &= 0x3F;
+	for (uint16_t i = 0; i < ulen; i++) {
+		data[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
+	}
+	return ulen;
+}
+
 uint8_t GlobData[25];
 void TM_MFRC522_SelfTest(uint8_t backData[64]) {
-
 
 	TM_MFRC522_Reset();
 
@@ -447,8 +447,23 @@ void TM_MFRC522_SelfTest(uint8_t backData[64]) {
 	TM_MFRC522_WriteMem(GlobData);
 
 	TM_MFRC522_WriteRegister(MFRC522_REG_AUTO_TEST, 0x09);
-	TM_MFRC522_WriteBuffer(GlobData, 1);
+	TM_MFRC522_WriteRegister(MFRC522_REG_FIFO_DATA, 0x00);
+
+	/* Start Self Test CRC Calculations */
 	TM_MFRC522_DoCmd(PCD_CALCCRC);
-	TM_MFRC522_ReadBuffer(backData);
-	HAL_Delay(100);
+
+	/* Wait until we have 64 bytes to read from our FIFO */
+	uint8_t n;
+	for (uint8_t i = 0; i < 0xFF; i++) {
+		n = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_LEVEL);
+		if (n >= 64) {
+			break;
+		}
+	}
+	/* Stop Self Test CRC Calculations */
+	TM_MFRC522_DoCmd(PCD_IDLE);
+
+	for (uint16_t i = 0; i < 64; i++) {
+		backData[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
+	}
 }
