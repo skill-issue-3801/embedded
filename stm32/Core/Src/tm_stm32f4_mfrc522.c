@@ -131,6 +131,11 @@ void TM_MFRC522_ClearBitMask(uint8_t reg, uint8_t mask){
 	TM_MFRC522_WriteRegister(reg, TM_MFRC522_ReadRegister(reg) & (~mask));
 } 
 
+void TM_MFRC522_ClearSetBitMask(uint8_t reg, uint8_t mask) {
+	TM_MFRC522_ClearBitMask(reg, mask);
+	TM_MFRC522_SetBitMask(reg, mask);
+}
+
 void TM_MFRC522_AntennaOn(void) {
 	uint8_t temp;
 
@@ -438,8 +443,41 @@ uint16_t TM_MFRC522_ReadBuffer(uint8_t *data) {
 	return ulen;
 }
 
+void TM_MFRC522_PowerDown() {
+	TM_MFRC522_SetBitMask(MFRC522_REG_COMMAND, (1 << 4));
+}
+
+void TM_MFRC522_PowerUp() {
+	TM_MFRC522_ClearBitMask(MFRC522_REG_COMMAND, (1 << 4));
+	while (TM_MFRC522_ReadRegister(MFRC522_REG_COMMAND) & (1 << 4));
+}
+
+void TM_MFRC522_version_dump() {
+	uart_printf("PCID Reader ");
+	uint8_t version = TM_MFRC522_ReadRegister(MFRC522_REG_VERSION);
+	uart_printf("Version: 0x%X ", version);
+	switch (version) {
+	case (0x88):
+			uart_printf("(Clone)\r\n");
+			break;
+	case (0x90):
+			uart_printf("(V0.0)\r\n");
+			break;
+	case (0x91):
+			uart_printf("(V1.0)\r\n");
+			break;
+	case (0x12):
+			uart_printf("(Counterfeit Chip)\r\n");
+			break;
+	default:
+			uart_printf("(Unknown)\r\n");
+			break;
+	}
+}
+
 uint8_t GlobData[25];
-void TM_MFRC522_SelfTest(uint8_t backData[64]) {
+void TM_MFRC522_SelfTest() {
+	uint8_t data[64];
 
 	TM_MFRC522_Reset();
 
@@ -464,6 +502,7 @@ void TM_MFRC522_SelfTest(uint8_t backData[64]) {
 	TM_MFRC522_DoCmd(PCD_IDLE);
 
 	for (uint16_t i = 0; i < 64; i++) {
-		backData[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
+		data[i] = TM_MFRC522_ReadRegister(MFRC522_REG_FIFO_DATA);
 	}
+	hex_dump(data, 64);
 }

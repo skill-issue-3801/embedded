@@ -101,15 +101,13 @@ int main(void)
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 
-  	memset(buf, 0, 64);
+  	TM_MFRC522_version_dump();
   	TM_MFRC522_SelfTest(buf);
-	hex_dump(buf, 64);
 
   while (1)
   {
 	  //sprintf(buf, "hello\r\n");
 	  //buf[0] = 'k';
-	  uart_printf("Hello world!\r\n");
 	  HAL_Delay(500);
     /* USER CODE END WHILE */
 
@@ -307,12 +305,11 @@ void hex_dump(uint8_t* buffer, uint8_t len) {
 	memset(buf, 0, 5);
 	for (int i = 0; i < len; i++) {
 		if (i % 10 == 0) {
-			sprintf(buf, "\n\r");
-			HAL_UART_Transmit(&huart2, (uint8_t*)buf, (sizeof(char) * 3), HAL_MAX_DELAY);
+			uart_printf("\r\n");
 		}
-		sprintf(buf, "0x%0X ", buffer[i]);
-		HAL_UART_Transmit(&huart2, (uint8_t*)buf, (sizeof(char) * 5), HAL_MAX_DELAY);
+		uart_printf("0x%0X ", buffer[i]);
 	}
+	uart_printf("\r\n");
 }
 
 void uart_printf(const char *fmt, ...) {
