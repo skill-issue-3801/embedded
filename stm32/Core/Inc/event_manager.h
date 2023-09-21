@@ -17,13 +17,11 @@
 
 #define BIT_RANGE_BTN	0x0001F
 
-#define BIT_BTN1		0x00001
-#define BIT_BTN2 		0x00002
-#define BIT_BTN3 		0x00004
-#define BIT_BTN4 		0x00008
-#define BIT_BTN5		0x00010
-
-
+#define BIT_BTN1		0x01
+#define BIT_BTN2 		0x02
+#define BIT_BTN3 		0x03
+#define BIT_BTN4 		0x04
+#define BIT_BTN5		0x05
 
 /* Function definitions */
 int eventManagerInit(void);

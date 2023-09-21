@@ -10,14 +10,15 @@
 
 struct UartMsg {
 	char msgID;
-	char msgDataLen;
-	char msgData[10];
+	char msgData[3];
 };
 
 #define QUEUE_LEN	5
 
 /* Valid message ID types */
 #define MSG_BTN		0x01
+#define MSG_ADC		0x02
+#define MSG_NFC		0x03
 
 /* Other defines for the serial manager functionality */
 #define SERIAL_MANAGER_SLEEP_MS 100
@@ -26,5 +27,6 @@ struct UartMsg {
 int serialManagerInit(void);
 void serialManagerTask (void* argument);
 void serialSendButtonMessage (char button_index);
+void serialSendADCMessage (char adc_index, char adc_theshold);
 
 #endif /* INC_SERIAL_MANAGER_H_ */

@@ -15,6 +15,8 @@
 
 /* Function definitions */
 void serialParseButton (struct UartMsg *msg);
+void serialParseADC (struct UartMsg *msg);
+void serialSend (struct UartMsg *msg);
 
 /* External Variables */
 extern UART_HandleTypeDef  huart2;
@@ -52,8 +54,11 @@ void serialManagerTask (void* argument) {
 		ret = xQueueReceive(xQueue, (void*)&msg, 200);
 		if (!ret)
 			continue;
-		if (msg.msgID == MSG_BTN)
-			serialParseButton(&msg);
+		serialSend(&msg);
+//		if (msg.msgID == MSG_BTN)
+//			serialSend(&msg);
+//		else if (msg.msgID == MSG_ADC)
+//			serialParseADC(&msg);
 	}
 }
 
@@ -68,7 +73,8 @@ void serialSendButtonMessage (char button_index) {
 	struct UartMsg msg;
 	msg.msgID = MSG_BTN;
 	msg.msgData[0] = button_index;
-	msg.msgDataLen = 1;
+	msg.msgData[1] = 0;
+	msg.msgData[2] = 0;
 
 	xQueueSend(xQueue, (void*)&msg, 200);
 }
@@ -95,4 +101,40 @@ void serialParseButton (struct UartMsg *msg) {
 	} else if (msg->msgData[0] == 0x00010) {
 		HAL_UART_Transmit(&huart2, (uint8_t*)"purple\n\r", 8, HAL_MAX_DELAY);
 	}
+}
+
+void serialSendADCMessage (char adc_index, char adc_theshold) {
+
+	struct UartMsg msg;
+	msg.msgID = MSG_ADC;
+	msg.msgData[0] = adc_index;
+	msg.msgData[1] = adc_theshold;
+	msg.msgData[2] = 0;
+
+	xQueueSend(xQueue, (void*)&msg, 200);
+}
+
+void serialParseADC (struct UartMsg *msg) {
+
+	if (msg->msgData[0] == 0x00000) {
+		HAL_UART_Transmit(&huart2, (uint8_t*)"PC0 New Thresh!\n\r", 17, HAL_MAX_DELAY);
+	} else if (msg->msgData[0] == 0x00001) {
+		HAL_UART_Transmit(&huart2, (uint8_t*)"PC1 New Thresh!\n\r", 17, HAL_MAX_DELAY);
+	}
+}
+
+void serialSend (struct UartMsg *msg) {
+
+	char buffer[5];
+
+	// Looks ugly but works
+	buffer[0] = msg->msgID;
+	buffer[1] = msg->msgData[0];
+	buffer[2] = msg->msgData[1];
+	buffer[3] = msg->msgData[2];
+	buffer[4] = '\n'; // newline termination for easier python parsing
+
+	// Send that data
+	HAL_UART_Transmit(&huart2, (uint8_t*)buffer, 5, HAL_MAX_DELAY);
+
 }

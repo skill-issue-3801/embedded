@@ -7,11 +7,15 @@
 
 /* Function Definition Includes */
 #include <gpio_manager.h>
+#include "serial_manager.h"
+#include "event_manager.h"
+
+/* Other dependencies */
+#include "main.h"
 #include "FreeRTOS.h"
 #include "task.h"
-#include "stdio.h"
-#include "main.h"
-#include "event_manager.h"
+#include "math.h"
+
 
 /* External Variables */
 extern UART_HandleTypeDef  	huart2; // Only included for debug, remove in the future please
@@ -44,29 +48,50 @@ int gpioManagerInit(void) {
 }
 
 /*
- * @brief	Task for the gpio manager. Reads the ADC values, if the value
- * 			has changed
+ * @brief	Task for the gpio manager. Reads the ADC values, and performs
+ * 			a fading average on the value. Determines which threshold that
+ * 			value sits in, and if the threshold has changed, alerts the
+ * 			serial manager.
+ * @param	argument	Unused.
+ * @return	None.
  */
 void gpioManagerTask (void* argument) {
 
-	const TickType_t msDelay = 100 / portTICK_PERIOD_MS;
-	const float fade_alpha = 0.9;
-	char output[40] = {0}; // Remove this, temp debug printing
+	// Const defines for operation
+	const TickType_t msDelay = GPIO_MANAGER_SLEEP_MS / portTICK_PERIOD_MS;
+	const float fade_alpha = 0.8;
+	const float thresh_width = ADC_VDD / ADC_THRESHOLDS;
 
 	// Fading average variables
-	float adc_pc0_avg = 0;
-	float adc_pc1_avg = 0;
+	float pc0_adc_avg = 0;
+	float pc1_adc_avg = 0;
+	float pc0_thresh = -1;
+	float pc1_thresh = -1;
+
+	// Variables for performing operations, made for eye considerations
 	uint32_t sample;
+	float sample_thresh;
 
 	for (;;) {
+		// Calculate ADC values
+		sample = gpio_adc_calcvalue(adc_values[0], ADC_VDD);
+		fading_average(&pc0_adc_avg, sample, fade_alpha);
 
-		sample = gpio_adc_calcvalue(adc_values[0], ADC_PC0_VDD);
-		fading_average(&adc_pc0_avg, sample, fade_alpha);
+		sample = gpio_adc_calcvalue(adc_values[1], ADC_VDD);
+		fading_average(&pc1_adc_avg, sample, fade_alpha);
 
-		sprintf(output, "ADC on PC0=%.1f\n\r", adc_pc0_avg);
-//		val2 = adc_values[1];
-		HAL_UART_Transmit(&huart2, (uint8_t*)output, 16, HAL_MAX_DELAY);
+		// Find if an ADC value has entered a new threshold
+		sample_thresh = floorf(pc0_adc_avg / thresh_width);
+		if (sample_thresh != pc0_thresh) {
+			pc0_thresh = sample_thresh;
+			serialSendADCMessage(ADC_PC0_INDX, pc0_thresh);
+		}
 
+		sample_thresh = floorf(pc1_adc_avg / thresh_width);
+		if (sample_thresh != pc1_thresh) {
+			pc1_thresh = sample_thresh;
+			serialSendADCMessage(ADC_PC1_INDX, pc1_thresh);
+		}
 
 		HAL_ADC_Start_DMA(&hadc1, adc_values, ADC_COUNT);
 		vTaskDelay(msDelay);
