@@ -9,6 +9,7 @@
 #include <gpio_manager.h>
 #include "FreeRTOS.h"
 #include "task.h"
+#include "stdio.h"
 #include "main.h"
 #include "event_manager.h"
 
@@ -16,13 +17,16 @@
 extern UART_HandleTypeDef  	huart2; // Only included for debug, remove in the future please
 extern ADC_HandleTypeDef 	hadc1;
 
+/* Function definitions */
+float gpio_adc_calcvalue(uint32_t raw_adc, float vdd);
+void fading_average(float* storage, float new_value, float alpha);
+
 /* Private Variables */
 uint32_t PB1_LastPress = 0;
 uint32_t PB_Green_LastPress = 0;
 uint32_t PB_Yellow_LastPress = 0;
 uint32_t PB_Orange_LastPress = 0;
 uint32_t PB_Purple_LastPress = 0;
-
 uint32_t adc_values[ADC_COUNT];
 
 /*
@@ -46,18 +50,52 @@ int gpioManagerInit(void) {
 void gpioManagerTask (void* argument) {
 
 	const TickType_t msDelay = 100 / portTICK_PERIOD_MS;
+	const float fade_alpha = 0.9;
+	char output[40] = {0}; // Remove this, temp debug printing
 
-	char output[40];
-	uint32_t val1 = 0;
-	uint32_t val2 = 0;
+	// Fading average variables
+	float adc_pc0_avg = 0;
+	float adc_pc1_avg = 0;
+	uint32_t sample;
 
 	for (;;) {
-		val1 = adc_values[0];
-		val2 = adc_values[1];
+
+		sample = gpio_adc_calcvalue(adc_values[0], ADC_PC0_VDD);
+		fading_average(&adc_pc0_avg, sample, fade_alpha);
+
+		sprintf(output, "ADC on PC0=%.1f\n\r", adc_pc0_avg);
+//		val2 = adc_values[1];
+		HAL_UART_Transmit(&huart2, (uint8_t*)output, 16, HAL_MAX_DELAY);
+
 
 		HAL_ADC_Start_DMA(&hadc1, adc_values, ADC_COUNT);
 		vTaskDelay(msDelay);
 	}
+}
+
+/*
+ * @brief	Find the voltage value of the ADC.
+ * @param	raw_adc	The raw ADC reading, we are expecting readings
+ * 					from 12 bit sampels
+ * @param	vdd		Supply voltage the ADC is using
+ * @return	The voltage of the adc sample.
+ */
+float gpio_adc_calcvalue(uint32_t raw_adc, float vdd) {
+
+	return (raw_adc / 4095.0 * vdd);
+}
+
+/*
+ * @brief	Take a given ADC voltage sample and perform a fading
+ * 			average on it.
+ * @param	*storage	Pointer to the variable that stores the fading average.
+ * @param	new_value	Latest value to be integrated into the average.
+ * @param	alpha		The fading factor to utilise.
+ * @return	None.
+ */
+void fading_average(float* storage, float new_value, float alpha) {
+
+	*storage = new_value*alpha + (1.0-alpha)*storage[0];
 }
 
 
