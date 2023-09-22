@@ -32,7 +32,7 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include <stdarg.h>
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -91,7 +91,8 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+void hex_dump(uint8_t *buffer, uint8_t len);
+void uart_printf(const char *fmt, ...);
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
