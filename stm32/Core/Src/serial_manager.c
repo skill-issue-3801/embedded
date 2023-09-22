@@ -119,7 +119,7 @@ void serialSendNFCMessage (char nfc_chunk0, char nfc_chunk1, char nfc_chunk2) {
  */
 void serialSend (struct UartMsg *msg) {
 
-	char buffer[5];
+	char buffer[5] = {0};
 
 	// Looks ugly but works
 	buffer[0] = msg->msgID;

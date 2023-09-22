@@ -11,6 +11,7 @@
 
 #include "main.h"
 
+extern UART_HandleTypeDef huart2;
 
 void hex_dump(uint8_t* buffer, uint8_t len) {
 	char buf[10];

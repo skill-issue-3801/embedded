@@ -136,27 +136,27 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin) {
 
 	if (GPIO_Pin == B1_Pin) {
 		if ((tick_now - PB1_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BIT_BTN1);
+			eventManagerSetBitISR(BTN1_EVENT_BIT);
 			PB1_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_GREEN_Pin) {
 		if ((tick_now - PB_Green_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BIT_BTN2);
+			eventManagerSetBitISR(BTN2_EVENT_BIT);
 			PB_Green_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_YELLOW_Pin) {
 		if ((tick_now - PB_Yellow_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BIT_BTN3);
+			eventManagerSetBitISR(BTN3_EVENT_BIT);
 			PB_Yellow_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_ORANGE_Pin) {
 		if ((tick_now - PB_Orange_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BIT_BTN4);
+			eventManagerSetBitISR(BTN4_EVENT_BIT);
 			PB_Orange_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PURPLE_Pin) { // Could swap to pure else, leaving as if just in case other PBs are used.
 		if ((tick_now - PB_Purple_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BIT_BTN5);
+			eventManagerSetBitISR(BTN5_EVENT_BIT);
 			PB_Purple_LastPress = tick_now;
 		}
 	}

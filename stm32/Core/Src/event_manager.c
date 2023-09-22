@@ -59,7 +59,7 @@ void eventManagerTask (void* argument) {
 
 
 		/* Add code here for the specific event handling when */
-		if (uxBits & (BIT_BTN1 | BIT_BTN2 | BIT_BTN3 | BIT_BTN4 | BIT_BTN5)) {
+		if (uxBits & BTN_EVENT_RANGE) {
 			// Call button handling code here
 			handlerButtonBits(uxBits);
 		}
@@ -93,16 +93,16 @@ void eventManagerSetBitISR (EventBits_t bits) {
  */
 void handlerButtonBits (uint32_t bits) {
 
-	bits = bits & BIT_RANGE_BTN;
+	bits = bits & BTN_EVENT_RANGE;
 
-	if (bits & BIT_BTN1)
-		serialSendButtonMessage(BIT_BTN1);
-	else if (bits & BIT_BTN2)
-		serialSendButtonMessage(BIT_BTN2);
-	else if (bits & BIT_BTN3)
-		serialSendButtonMessage(BIT_BTN3);
-	else if (bits & BIT_BTN4)
-		serialSendButtonMessage(BIT_BTN4);
+	if (bits & BTN1_EVENT_BIT)
+		serialSendButtonMessage(BTN1_VALUE);
+	else if (bits & BTN2_EVENT_BIT)
+		serialSendButtonMessage(BTN2_VALUE);
+	else if (bits & BTN3_EVENT_BIT)
+		serialSendButtonMessage(BTN3_VALUE);
+	else if (bits & BTN4_EVENT_BIT)
+		serialSendButtonMessage(BTN4_VALUE);
 	else
-		serialSendButtonMessage(BIT_BTN5);
+		serialSendButtonMessage(BTN5_VALUE);
 }

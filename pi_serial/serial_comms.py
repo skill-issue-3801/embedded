@@ -26,7 +26,6 @@ def press_key(key_character: chr) :
 def parse_bytes(data : bytes) :
     msg_type = data[0]
 
-    print(msg_type)
     if msg_type is MSG_TYPE_BTN :
         handle_button(data[1])
     elif msg_type is MSG_TYPE_ADC :

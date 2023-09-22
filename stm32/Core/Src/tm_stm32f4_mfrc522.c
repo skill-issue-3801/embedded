@@ -20,6 +20,8 @@
 #include "main.h"
 #include <string.h>
 
+extern I2C_HandleTypeDef hi2c1;
+
 void TM_MFRC522_Init(void) {
 	//TM_MFRC522_InitPins();
 	//TM_SPI_Init(MFRC522_SPI, MFRC522_SPI_PINSPACK);

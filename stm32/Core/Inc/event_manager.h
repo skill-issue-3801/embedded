@@ -15,13 +15,19 @@
 /* Add bits as needed */
 #define BITS_WAIT_ALL	0xFFFFF
 
-#define BIT_RANGE_BTN	0x0001F
+#define BTN_EVENT_RANGE	0x0001F
 
-#define BIT_BTN1		0x01
-#define BIT_BTN2 		0x02
-#define BIT_BTN3 		0x03
-#define BIT_BTN4 		0x04
-#define BIT_BTN5		0x05
+#define BTN1_EVENT_BIT	0x01
+#define BTN2_EVENT_BIT 	0x02
+#define BTN3_EVENT_BIT 	0x04
+#define BTN4_EVENT_BIT 	0x08
+#define BTN5_EVENT_BIT	0x10
+
+#define BTN1_VALUE	0x01
+#define BTN2_VALUE 	0x02
+#define BTN3_VALUE 	0x03
+#define BTN4_VALUE	0x04
+#define BTN5_VALUE	0x05
 
 /* Function definitions */
 int eventManagerInit(void);
