@@ -21,7 +21,6 @@ void handlerButtonBits (EventBits_t bits);
 
 /* Private Variables */
 EventGroupHandle_t xEventGroup; // Currently 24 bits set, check configUSE_16_BIT_TICKS in FreeRTOSConfig.h
-extern UART_HandleTypeDef  huart2;
 
 /* ---------- Functions ---------- */
 /*
@@ -55,7 +54,6 @@ void eventManagerTask (void* argument) {
 
 		/* Check if the wait bits caught nothing, then resume block */
 		if (uxBits == 0x000000) {
-			//osDelay(xTicksToWait);
 			continue;
 		}
 
@@ -97,20 +95,14 @@ void handlerButtonBits (uint32_t bits) {
 
 	bits = bits & BIT_RANGE_BTN;
 
-	if (bits & BIT_BTN1) {
-//		HAL_UART_Transmit(&huart2, (uint8_t*)"main\n\r", 6, HAL_MAX_DELAY);
+	if (bits & BIT_BTN1)
 		serialSendButtonMessage(BIT_BTN1);
-	} else if (bits & BIT_BTN2) {
-		//HAL_UART_Transmit(&huart2, (uint8_t*)"green\n\r", 7, HAL_MAX_DELAY);
+	else if (bits & BIT_BTN2)
 		serialSendButtonMessage(BIT_BTN2);
-	} else if (bits & BIT_BTN3) {
-		//HAL_UART_Transmit(&huart2, (uint8_t*)"yellow\n\r", 8, HAL_MAX_DELAY);
+	else if (bits & BIT_BTN3)
 		serialSendButtonMessage(BIT_BTN3);
-	} else if (bits & BIT_BTN4) {
-		//HAL_UART_Transmit(&huart2, (uint8_t*)"orange\n\r", 8, HAL_MAX_DELAY);
+	else if (bits & BIT_BTN4)
 		serialSendButtonMessage(BIT_BTN4);
-	} else {
-		//HAL_UART_Transmit(&huart2, (uint8_t*)"purple\n\r", 8, HAL_MAX_DELAY);
+	else
 		serialSendButtonMessage(BIT_BTN5);
-	}
 }

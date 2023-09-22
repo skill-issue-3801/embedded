@@ -18,7 +18,6 @@
 
 
 /* External Variables */
-extern UART_HandleTypeDef  	huart2; // Only included for debug, remove in the future please
 extern ADC_HandleTypeDef 	hadc1;
 
 /* Function definitions */

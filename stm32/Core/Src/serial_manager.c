@@ -14,8 +14,6 @@
 #include "stm32l4xx_hal.h"
 
 /* Function definitions */
-void serialParseButton (struct UartMsg *msg);
-void serialParseADC (struct UartMsg *msg);
 void serialSend (struct UartMsg *msg);
 
 /* External Variables */
@@ -40,8 +38,8 @@ int serialManagerInit(void) {
 
 
 /*
- * @brief	Task for the event manager. Uses public facing functions to set
- * 			eventGroup bit flags for internal task handling.
+ * @brief	Task for the serial manager. Reads from the queue and when messages
+ * 			are detected they are sent through serial.
  * @param 	argument: Not used.
  * @retval	None.
  */
@@ -55,10 +53,6 @@ void serialManagerTask (void* argument) {
 		if (!ret)
 			continue;
 		serialSend(&msg);
-//		if (msg.msgID == MSG_BTN)
-//			serialSend(&msg);
-//		else if (msg.msgID == MSG_ADC)
-//			serialParseADC(&msg);
 	}
 }
 
@@ -81,28 +75,12 @@ void serialSendButtonMessage (char button_index) {
 
 
 /*
- * @brief	Function that parses button information and sends
- * 			the appropriate information over serial.
- * @param	msg: Pointer to a UartMsg structure.
+ * @brief	Add a message to the serial queue about a new ADC threshold
+ * 			value being reached.
+ * @param	adc_index: 		The index of the adc.
+ * @param	adc_theshold:	New ADC threshold value.
  * @retval	None.
  */
-void serialParseButton (struct UartMsg *msg) {
-
-	// This wouldnt be here, it would just send the uart construct
-	// this is just for debugging purposes.
-	if (msg->msgData[0] == 0x00001) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"main\n\r", 6, HAL_MAX_DELAY);
-	} else if (msg->msgData[0] == 0x00002) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"green\n\r", 7, HAL_MAX_DELAY);
-	} else if (msg->msgData[0] == 0x00004) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"yellow\n\r", 8, HAL_MAX_DELAY);
-	} else if (msg->msgData[0] == 0x00008) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"orange\n\r", 8, HAL_MAX_DELAY);
-	} else if (msg->msgData[0] == 0x00010) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"purple\n\r", 8, HAL_MAX_DELAY);
-	}
-}
-
 void serialSendADCMessage (char adc_index, char adc_theshold) {
 
 	struct UartMsg msg;
@@ -114,15 +92,31 @@ void serialSendADCMessage (char adc_index, char adc_theshold) {
 	xQueueSend(xQueue, (void*)&msg, 200);
 }
 
-void serialParseADC (struct UartMsg *msg) {
+/*
+ * @brief	Add a message to the serial queue about a NFC token
+ * 			being detected.
+ * @param	nfc_chunk0:	0th 8 bit chunk of the NFC ID.
+ * @param	nfc_chunk1:	1st 8 bit chunk of the NFC ID.
+ * @param	nfc_chunk2: 2nd 8 bit chunk of the NFC ID.
+ * @retval	None.
+ */
+void serialSendNFCMessage (char nfc_chunk0, char nfc_chunk1, char nfc_chunk2) {
 
-	if (msg->msgData[0] == 0x00000) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"PC0 New Thresh!\n\r", 17, HAL_MAX_DELAY);
-	} else if (msg->msgData[0] == 0x00001) {
-		HAL_UART_Transmit(&huart2, (uint8_t*)"PC1 New Thresh!\n\r", 17, HAL_MAX_DELAY);
-	}
+	struct UartMsg msg;
+	msg.msgID = MSG_NFC;
+	msg.msgData[0] = nfc_chunk0;
+	msg.msgData[1] = nfc_chunk1;
+	msg.msgData[2] = nfc_chunk2;
+
+	xQueueSend(xQueue, (void*)&msg, 200);
 }
 
+
+/*
+ * @brief	Convert an incoming message struct and send it over serial.
+ * @param	*msg:	Pointer to the UartMsg struct containning the data.
+ * @retval	None.
+ */
 void serialSend (struct UartMsg *msg) {
 
 	char buffer[5];

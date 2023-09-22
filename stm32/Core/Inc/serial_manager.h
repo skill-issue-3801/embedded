@@ -28,5 +28,6 @@ int serialManagerInit(void);
 void serialManagerTask (void* argument);
 void serialSendButtonMessage (char button_index);
 void serialSendADCMessage (char adc_index, char adc_theshold);
+void serialSendNFCMessage (char nfc_chunk0, char nfc_chunk1, char nfc_chunk2);
 
 #endif /* INC_SERIAL_MANAGER_H_ */
