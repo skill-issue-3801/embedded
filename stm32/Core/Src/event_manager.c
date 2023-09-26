@@ -95,14 +95,20 @@ void handlerButtonBits (uint32_t bits) {
 
 	bits = bits & BTN_EVENT_RANGE;
 
-	if (bits & BTN1_EVENT_BIT)
-		serialSendButtonMessage(BTN1_VALUE);
-	else if (bits & BTN2_EVENT_BIT)
-		serialSendButtonMessage(BTN2_VALUE);
-	else if (bits & BTN3_EVENT_BIT)
-		serialSendButtonMessage(BTN3_VALUE);
-	else if (bits & BTN4_EVENT_BIT)
-		serialSendButtonMessage(BTN4_VALUE);
-	else
-		serialSendButtonMessage(BTN5_VALUE);
+	if (bits & PC2_EVENT_BIT)
+		serialSendButtonMessage(PC2_VALUE);
+	if (bits & PC3_EVENT_BIT)
+		serialSendButtonMessage(PC3_VALUE);
+	if (bits & PC10_EVENT_BIT)
+		serialSendButtonMessage(PC10_VALUE);
+	if (bits & PC11_EVENT_BIT)
+		serialSendButtonMessage(PC11_VALUE);
+	if (bits & PC12_EVENT_BIT)
+		serialSendButtonMessage(PC12_VALUE);
+	if (bits & PC13_EVENT_BIT)
+		serialSendButtonMessage(PC13_VALUE);
+	if (bits & PH0_EVENT_BIT)
+		serialSendButtonMessage(PH0_VALUE);
+	if (bits & PH1_EVENT_BIT)
+		serialSendButtonMessage(PH1_VALUE);
 }

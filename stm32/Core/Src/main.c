@@ -438,11 +438,22 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : B1_Pin PB_GREEN_Pin PB_YELLOW_Pin PB_ORANGE_Pin */
-  GPIO_InitStruct.Pin = B1_Pin|PB_GREEN_Pin|PB_YELLOW_Pin|PB_ORANGE_Pin;
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOC, USER_LED_4_Pin|USER_LED_3_Pin|USER_LED_2_Pin|USER_LED_1_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pins : PB_PC13_Pin PB_PC2_Pin PB_PC3_Pin PB_PC10_Pin
+                           PB_PC11_Pin PB_PC12_Pin */
+  GPIO_InitStruct.Pin = PB_PC13_Pin|PB_PC2_Pin|PB_PC3_Pin|PB_PC10_Pin
+                          |PB_PC11_Pin|PB_PC12_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB_PH0_Pin PB_PH1_Pin */
+  GPIO_InitStruct.Pin = PB_PH0_Pin|PB_PH1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
   /*Configure GPIO pin : LD2_Pin */
   GPIO_InitStruct.Pin = LD2_Pin;
@@ -451,13 +462,26 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : PB_PURPLE_Pin */
-  GPIO_InitStruct.Pin = PB_PURPLE_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
-  GPIO_InitStruct.Pull = GPIO_PULLUP;
-  HAL_GPIO_Init(PB_PURPLE_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pins : USER_LED_4_Pin USER_LED_3_Pin USER_LED_2_Pin USER_LED_1_Pin */
+  GPIO_InitStruct.Pin = USER_LED_4_Pin|USER_LED_3_Pin|USER_LED_2_Pin|USER_LED_1_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_MEDIUM;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
   /* EXTI interrupt init*/
+  HAL_NVIC_SetPriority(EXTI0_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(EXTI0_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI1_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(EXTI1_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI2_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(EXTI2_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI3_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
@@ -488,7 +512,11 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(10000);
+	HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
+	HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
+	HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
+	HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
+    osDelay(5000);
   }
   /* USER CODE END 5 */
 }

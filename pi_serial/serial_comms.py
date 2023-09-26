@@ -33,7 +33,7 @@ def parse_bytes(data : bytes) :
     elif  msg_type is MSG_TYPE_NFC :
         print("NFC time")
     else :
-        print("I dont know what message this is?")
+        print("I dont know what message this is? I just got: ", msg_type)
 
 
 def handle_button (btn_index : int) :

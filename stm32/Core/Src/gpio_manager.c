@@ -25,11 +25,14 @@ float gpio_adc_calcvalue(uint32_t raw_adc, float vdd);
 void fading_average(float* storage, float new_value, float alpha);
 
 /* Private Variables */
-uint32_t PB1_LastPress = 0;
-uint32_t PB_Green_LastPress = 0;
-uint32_t PB_Yellow_LastPress = 0;
-uint32_t PB_Orange_LastPress = 0;
-uint32_t PB_Purple_LastPress = 0;
+uint32_t PC2_LastPress 	= 0;
+uint32_t PC3_LastPress 	= 0;
+uint32_t PC10_LastPress = 0;
+uint32_t PC11_LastPress = 0;
+uint32_t PC12_LastPress = 0;
+uint32_t PC13_LastPress = 0;
+uint32_t PH0_LastPress 	= 0;
+uint32_t PH1_LastPress 	= 0;
 uint32_t adc_values[ADC_COUNT];
 
 /*
@@ -134,30 +137,45 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin) {
 
 	uint32_t tick_now = HAL_GetTick();
 
-	if (GPIO_Pin == B1_Pin) {
-		if ((tick_now - PB1_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BTN1_EVENT_BIT);
-			PB1_LastPress = tick_now;
+	if (GPIO_Pin == PB_PC2_Pin) {
+		if ((tick_now - PC2_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PC2_EVENT_BIT);
+			PC2_LastPress = tick_now;
 		}
-	} else if (GPIO_Pin == PB_GREEN_Pin) {
-		if ((tick_now - PB_Green_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BTN2_EVENT_BIT);
-			PB_Green_LastPress = tick_now;
+	} else if (GPIO_Pin == PB_PC3_Pin) {
+		if ((tick_now - PC3_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PC3_EVENT_BIT);
+			PC3_LastPress = tick_now;
 		}
-	} else if (GPIO_Pin == PB_YELLOW_Pin) {
-		if ((tick_now - PB_Yellow_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BTN3_EVENT_BIT);
-			PB_Yellow_LastPress = tick_now;
+	} else if (GPIO_Pin == PB_PC10_Pin) {
+		if ((tick_now - PC10_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PC10_EVENT_BIT);
+			PC10_LastPress = tick_now;
 		}
-	} else if (GPIO_Pin == PB_ORANGE_Pin) {
-		if ((tick_now - PB_Orange_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BTN4_EVENT_BIT);
-			PB_Orange_LastPress = tick_now;
+	} else if (GPIO_Pin == PB_PC11_Pin) {
+		if ((tick_now - PC11_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PC11_EVENT_BIT);
+			PC11_LastPress = tick_now;
 		}
-	} else if (GPIO_Pin == PB_PURPLE_Pin) { // Could swap to pure else, leaving as if just in case other PBs are used.
-		if ((tick_now - PB_Purple_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(BTN5_EVENT_BIT);
-			PB_Purple_LastPress = tick_now;
+	} else if (GPIO_Pin == PB_PC12_Pin) {
+		if ((tick_now - PC12_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PC12_EVENT_BIT);
+			PC12_LastPress = tick_now;
+		}
+	} else if (GPIO_Pin == PB_PC13_Pin) {
+		if ((tick_now - PC13_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PC13_EVENT_BIT);
+			PC13_LastPress = tick_now;
+		}
+	} else if (GPIO_Pin == PB_PH0_Pin) {
+		if ((tick_now - PH0_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PH0_EVENT_BIT);
+			PH0_LastPress = tick_now;
+		}
+	} else if (GPIO_Pin == PB_PH1_Pin) {
+		if ((tick_now - PH1_LastPress) > PB_DEBOUNCE_THRESH_MS) {
+			eventManagerSetBitISR(PH1_EVENT_BIT);
+			PH1_LastPress = tick_now;
 		}
 	}
 }
