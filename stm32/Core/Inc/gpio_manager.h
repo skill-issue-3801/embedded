@@ -23,6 +23,7 @@
 
 int gpioManagerInit(void);
 void gpioManagerTask (void* argument);
+void toggle_user_select (char user_index);
 
 
 #endif /* INC_GPIO_MANAGER_H_ */

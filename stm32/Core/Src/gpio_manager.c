@@ -100,6 +100,29 @@ void gpioManagerTask (void* argument) {
 	}
 }
 
+/**
+ * @brief
+ */
+void toggle_user_select (char user_index) {
+
+	switch (user_index) {
+	case 1 :
+		HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
+		break;
+	case 2 :
+		HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
+		break;
+	case 3 :
+		HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
+		break;
+	case 4 :
+		HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
+		break;
+	default :
+		break;
+	}
+}
+
 /*
  * @brief	Find the voltage value of the ADC.
  * @param	raw_adc	The raw ADC reading, we are expecting readings
@@ -156,6 +179,7 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin) {
 		if ((tick_now - PC11_LastPress) > PB_DEBOUNCE_THRESH_MS) {
 			eventManagerSetBitISR(PC11_EVENT_BIT);
 			PC11_LastPress = tick_now;
+			toggle_user_select(1);
 		}
 	} else if (GPIO_Pin == PB_PC12_Pin) {
 		if ((tick_now - PC12_LastPress) > PB_DEBOUNCE_THRESH_MS) {

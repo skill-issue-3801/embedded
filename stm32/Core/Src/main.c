@@ -133,7 +133,7 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  MFRC522_Init();
+  //MFRC522_Init();
 
   // Lachie code kept for merge sake
   //TM_MFRC522_version_dump();
@@ -190,21 +190,22 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-  // uint8_t validBits = 0;
-  //     PICC_STATUS rc;
-  //     Tag tag;
-  //     if (MFRC522_IsNewCardPresent()) {
-  //       rc = MFRC522_Select(&tag, &validBits);
-  //       if (rc == PICC_STATUS_OK) {
-  //         uart_printf("Detected tag with ID: \r\n");
-  //         hex_dump(tag.tag_id, 7);
-  //         MFRC522_Halt();
-  //       } else {
-  //         uart_printf("Tag detected but couldn't select!\r\n");
-  //       }
-  //     }
-  //     HAL_Delay(100);
+
     /* USER CODE BEGIN 3 */
+//	uint8_t validBits = 0;
+//	PICC_STATUS rc;
+//	Tag tag;
+//	if (MFRC522_IsNewCardPresent()) {
+//	  rc = MFRC522_Select(&tag, &validBits);
+//	  if (rc == PICC_STATUS_OK) {
+//		  uart_printf("Detected tag with ID: \r\n");
+//		  hex_dump(tag.tag_id, 7);
+//		  MFRC522_Halt();
+//	  } else {
+//		  uart_printf("Tag detected but couldn't select!\r\n");
+//	  }
+//	}
+//	HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
@@ -454,6 +455,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(MFRC522_RESET_GPIO_Port, MFRC522_RESET_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, USER_LED_4_Pin|USER_LED_3_Pin|USER_LED_2_Pin|USER_LED_1_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PB_PC13_Pin PB_PC2_Pin PB_PC3_Pin PB_PC10_Pin
@@ -470,12 +474,18 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOH, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LD2_Pin */
-  GPIO_InitStruct.Pin = LD2_Pin;
+  /*Configure GPIO pins : LD2_Pin MFRC522_RESET_Pin */
+  GPIO_InitStruct.Pin = LD2_Pin|MFRC522_RESET_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LD2_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pin : MFRC522_INTERRUPT_Pin */
+  GPIO_InitStruct.Pin = MFRC522_INTERRUPT_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(MFRC522_INTERRUPT_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : USER_LED_4_Pin USER_LED_3_Pin USER_LED_2_Pin USER_LED_1_Pin */
   GPIO_InitStruct.Pin = USER_LED_4_Pin|USER_LED_3_Pin|USER_LED_2_Pin|USER_LED_1_Pin;
@@ -496,6 +506,9 @@ static void MX_GPIO_Init(void)
 
   HAL_NVIC_SetPriority(EXTI3_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(EXTI3_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 6, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
   HAL_NVIC_SetPriority(EXTI15_10_IRQn, 6, 0);
   HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
