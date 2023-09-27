@@ -26,6 +26,7 @@
 #include "gpio_manager.h"
 #include "event_manager.h"
 #include "serial_manager.h"
+#include "mfrc522.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -132,6 +133,7 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  MFRC522_Init();
 
   // Lachie code kept for merge sake
   //TM_MFRC522_version_dump();
@@ -188,7 +190,20 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+  // uint8_t validBits = 0;
+  //     PICC_STATUS rc;
+  //     Tag tag;
+  //     if (MFRC522_IsNewCardPresent()) {
+  //       rc = MFRC522_Select(&tag, &validBits);
+  //       if (rc == PICC_STATUS_OK) {
+  //         uart_printf("Detected tag with ID: \r\n");
+  //         hex_dump(tag.tag_id, 7);
+  //         MFRC522_Halt();
+  //       } else {
+  //         uart_printf("Tag detected but couldn't select!\r\n");
+  //       }
+  //     }
+  //     HAL_Delay(100);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
@@ -512,10 +527,6 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
-	HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
-	HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
-	HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
-	HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
     osDelay(5000);
   }
   /* USER CODE END 5 */
