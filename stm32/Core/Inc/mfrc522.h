@@ -14,6 +14,7 @@ typedef enum {
 	PICC_CMD_CT					= 0x88,
 	PICC_CMD_SEL_CL1			= 0x93,
 	PICC_CMD_SEL_CL2			= 0x95,
+	PICC_CMD_SEL_CL3			= 0x98,
 	PICC_CMD_HLTA				= 0x40,
     PICC_CMD_AUTHENT1A      	= 0x60,
     PICC_CMD_AUTHENT1B      	= 0x61,

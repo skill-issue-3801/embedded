@@ -106,7 +106,7 @@ void badCustomInit(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int ret = 0;
+//  int ret = 0;
   //uint8_t buf[64]; // lachie code kept for merge
   /* USER CODE END 1 */
 
@@ -133,22 +133,22 @@ int main(void)
   MX_I2C1_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
-  //MFRC522_Init();
+  MFRC522_Init();
 
   // Lachie code kept for merge sake
   //TM_MFRC522_version_dump();
   //TM_MFRC522_SelfTest(buf);
 
-  ret |= eventManagerInit();
-  ret |= serialManagerInit();
-  ret |= gpioManagerInit();
-
-  if (ret)
-	  badCustomInit();
-  /* USER CODE END 2 */
-
-  /* Init scheduler */
-  osKernelInitialize();
+//  ret |= eventManagerInit();
+//  ret |= serialManagerInit();
+//  ret |= gpioManagerInit();
+//
+//  if (ret)
+//	  badCustomInit();
+//  /* USER CODE END 2 */
+//
+//  /* Init scheduler */
+//  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -168,13 +168,13 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  eventManagerHandle = osThreadNew(eventManagerTask, NULL, &eventManager_attributes);
-  serialManagerHandle = osThreadNew(serialManagerTask, NULL, &serialManager_attributes);
-  gpioManagerHandle = osThreadNew(gpioManagerTask, NULL, &gpioManager_attributes);
+//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+//
+//  /* USER CODE BEGIN RTOS_THREADS */
+//  /* add threads, ... */
+//  eventManagerHandle = osThreadNew(eventManagerTask, NULL, &eventManager_attributes);
+//  serialManagerHandle = osThreadNew(serialManagerTask, NULL, &serialManager_attributes);
+//  gpioManagerHandle = osThreadNew(gpioManagerTask, NULL, &gpioManager_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -182,7 +182,7 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-  osKernelStart();
+//  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -192,20 +192,21 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-//	uint8_t validBits = 0;
-//	PICC_STATUS rc;
-//	Tag tag;
-//	if (MFRC522_IsNewCardPresent()) {
-//	  rc = MFRC522_Select(&tag, &validBits);
-//	  if (rc == PICC_STATUS_OK) {
-//		  uart_printf("Detected tag with ID: \r\n");
-//		  hex_dump(tag.tag_id, 7);
-//		  MFRC522_Halt();
-//	  } else {
-//		  uart_printf("Tag detected but couldn't select!\r\n");
-//	  }
-//	}
-//	HAL_Delay(100);
+	uint8_t validBits = 0;
+	PICC_STATUS rc;
+	Tag tag;
+	tag.tag_id_len = 7;
+	if (MFRC522_IsNewCardPresent()) {
+	  rc = MFRC522_Select(&tag, &validBits);
+	  if (rc == PICC_STATUS_OK) {
+		  uart_printf("Detected tag with ID: \r\n");
+		  hex_dump(tag.tag_id, 7);
+		  MFRC522_Halt();
+	  } else {
+		  uart_printf("Tag detected but couldn't select!\r\n");
+	  }
+	}
+	HAL_Delay(100);
   }
   /* USER CODE END 3 */
 }
