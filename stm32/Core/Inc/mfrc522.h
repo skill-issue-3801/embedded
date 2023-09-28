@@ -138,7 +138,7 @@ void MFRC522_SelfTest();
 void MFRC522_Halt();
 void MFRC522_version_dump();
 bool MFRC522_IsNewCardPresent();
-PICC_STATUS MFRC522_Select(Tag *tag);
+PICC_STATUS MFRC522_SelectStart(Tag *tag);
 PICC_STATUS MFRC522_WupAOrReqA(PICC_CMD cmd, uint8_t *bufferATQA, uint8_t *bufferSize);
 void MFRC522_GetType(Tag tag);
 

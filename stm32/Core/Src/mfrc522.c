@@ -343,163 +343,175 @@ void MFRC522_Halt(void) {
 	MFRC522_TransieveData(buff, 4, NULL, NULL, NULL, 0, true);
 }
 
-PICC_STATUS MFRC522_Select(Tag *tag) {
-	bool complete, selDone, cascade;
-	uint8_t cascadeLevel = 1;
-	uint8_t count, checkBit, index, idIndex;
-	int8_t curLevKwnBits;
-	uint8_t rxAlign, txLastBits, maxBytes, buffUsed;
-
-	uint8_t cmdBuff[9];
+PICC_STATUS MFRC522_PICC_AntiCollision(Tag *tag, uint8_t cmdBuff[9], int8_t *knownBits) {
+	uint8_t txLastBits, rxAlign, buffUsed, index, count, checkBit;
 	uint8_t rspnsLen;
 	uint8_t *rspnsBuff;
+
+	PICC_STATUS rc;
+
+	txLastBits = *knownBits % 8;
+	rxAlign = txLastBits;
+	count = *knownBits / 8;
+	index = 2 + count;
+	cmdBuff[1] = (index << 4) | txLastBits;
+	buffUsed = index + (txLastBits ? 1 : 0);
+	rspnsBuff = &cmdBuff[index];
+	rspnsLen = 9 - index;
+
+	MFRC522_WriteRegister(MFRC522_BitFramingReg, (rxAlign << 4) + txLastBits);
+
+	rc = MFRC522_TransieveData(cmdBuff, buffUsed, rspnsBuff, &rspnsLen, &txLastBits, rxAlign, false);
+	if (rc == PICC_STATUS_COLLISION) {
+		uint8_t valueOfCollReg = MFRC522_ReadRegister(MFRC522_CollReg);
+		if (valueOfCollReg & 0x20) {
+			return PICC_STATUS_COLLISION;
+		}
+		uint8_t collisionPos = valueOfCollReg & 0x1F;
+		if (collisionPos == 0) {
+			collisionPos = 32;
+		}
+
+		if (collisionPos <= *knownBits) {
+			return PICC_STATUS_INTERNAL_ERROR;
+		}
+		*knownBits = collisionPos;
+		checkBit = (*knownBits - 1) % 8;
+		count = *knownBits % 8;
+		index = 1 + (*knownBits / 8) + (count ? 1 : 0);
+		cmdBuff[index] &= ~(1 << checkBit); //Choose the tag with bit 0
+
+	} else if (rc != PICC_STATUS_OK) {
+		uart_printf("Error From transmission: 0x%X\r\n", rc);
+		return rc;
+	} else {
+		*knownBits = 32;
+	}
+	return PICC_STATUS_OK;
+}
+
+PICC_STATUS MFRC522_PICC_Select(Tag *tag, uint8_t cmdBuff[9], uint8_t *idIndex) {
+	uint8_t txLastBits = 0;
+	uint8_t rspnsLen;
+	uint8_t *rspnsBuff;
+	uint8_t index, bytesToCopy;
+	PICC_STATUS rc;
+
+	rspnsBuff = &cmdBuff[6];
+	rspnsLen = 3;
+	MFRC522_WriteRegister(MFRC522_BitFramingReg, 0x00);
+	rc = MFRC522_TransieveData(cmdBuff, 9, rspnsBuff, &rspnsLen, &txLastBits, 0, false);
+	if (rc != PICC_STATUS_OK) {
+		return rc;
+	}
+	index = (cmdBuff[2] == PICC_CMD_CT) ? 3 : 2;
+	bytesToCopy = (cmdBuff[2] == PICC_CMD_CT) ? 3 : 4;
+	for (int i = 0; i < bytesToCopy; i++) {
+		tag->tag_id[*idIndex + 1] = cmdBuff[index++];
+	}
+
+	if (rspnsLen != 3 || txLastBits != 0) {
+		return PICC_STATUS_ERROR;
+	}
+	rc = MFRC522_CalculateCRC(rspnsBuff, 1, &cmdBuff[2]);
+	if (rc != PICC_STATUS_OK) {
+		return rc;
+	}
+	if ((cmdBuff[2] != rspnsBuff[1] || (cmdBuff[3] != rspnsBuff[2]))) {
+		return PICC_STATUS_CRC_WRONG;
+	}
+	return PICC_STATUS_OK;
+}
+
+PICC_STATUS MFRC522_SelectCascade(Tag *tag, PICC_CMD selectLevel, uint8_t *cascadeLevel) {
+	uint8_t index, idIndex, maxBytes, bytesToCopy;
+	int8_t knownBits;
+	bool cascade;
+
+	uint8_t cmdBuff[9];
 	uint8_t *validBits = &tag->tag_known_bits;
 
 	PICC_STATUS rc;
 
-
-	if (*validBits > 80) {
-		return PICC_STATUS_INVALID;
+	idIndex = *cascadeLevel * 3 + 1;
+	knownBits = *validBits - (8 * idIndex);
+	if (knownBits < 0) {
+		knownBits = 0;
 	}
 
-	/* Clear collision flag */
-	MFRC522_ClearBitMask(MFRC522_CollReg, 0x80);
+	cascade = (validBits && tag->tag_id_len > idIndex);
+
+	index = 2;
+	if (cascade) {
+		cmdBuff[index++] = PICC_CMD_CT;
+	}
+
+	bytesToCopy = knownBits / 8 + (knownBits % 8 ? 1 : 0);
+
+	if (bytesToCopy) {
+		maxBytes = cascade ? 3 : 4;
+		if (bytesToCopy > maxBytes) {
+			bytesToCopy = maxBytes;
+		}
+		for (int i = 0; i < bytesToCopy; i++) {
+			cmdBuff[index++] = tag->tag_id[idIndex + 1];
+		}
+	}
+	if (cascade) {
+		knownBits += 8;
+	}
+
+	while (knownBits != 32) {
+		rc = MFRC522_PICC_AntiCollision(tag, cmdBuff, &knownBits);
+		if (rc != PICC_STATUS_OK) {
+			return rc;
+		}
+	}
+	rc = MFRC522_PICC_Select(tag, cmdBuff, &idIndex);
+	if (rc != PICC_STATUS_OK) {
+		return rc;
+	}
+	if (cmdBuff[3] & 0x04) {
+		cascadeLevel++;
+	} else {
+		tag->tag_slAck = cmdBuff[6];
+	}
+	return PICC_STATUS_OK;
+
+}
+
+PICC_STATUS MFRC522_SelectStart(Tag *tag) {
+
+	PICC_STATUS rc;
+
+	bool complete;
+
+	uint8_t cascadeLevel = 1;
+
+	if ((tag->tag_known_bits > 80) || (tag->tag_id_len > 10)) {
+		return PICC_STATUS_INVALID;
+	}
 
 	complete = false;
 	while (!complete) {
 		switch (cascadeLevel){
 			case 1:
-				cmdBuff[0] = PICC_CMD_SEL_CL1;
-				idIndex = 0;
-				cascade = validBits && tag->tag_id_len > 4;
+				rc = MFRC522_SelectCascade(tag, PICC_CMD_SEL_CL1, &cascadeLevel);
 				break;
 			case 2:
-				cmdBuff[0] = PICC_CMD_SEL_CL2;
-				idIndex = 3;
-				cascade = validBits && tag->tag_id_len > 7;
+				rc = MFRC522_SelectCascade(tag, PICC_CMD_SEL_CL1, &cascadeLevel);
 				break;
 			case 3:
-				cmdBuff[0] = PICC_CMD_SEL_CL3;
-				idIndex = 7;
-				cascade = false;
+				cascadeLevel = 0;
+				rc = MFRC522_SelectCascade(tag, PICC_CMD_SEL_CL1, &cascadeLevel);
+				break;
 			default:
 				return PICC_STATUS_INTERNAL_ERROR;
 				break;
 		}
-
-		curLevKwnBits = *validBits - (8 * idIndex);
-		if (curLevKwnBits < 0) {
-			curLevKwnBits = 0;
+		if (rc != PICC_STATUS_OK) {
+			return rc;
 		}
-
-		index = 2;
-		if (cascade) {
-			cmdBuff[index++] = PICC_CMD_CT;
-		}
-
-		/* Divide by 8, take the ceiling */
-		uint8_t bytesToCopy = curLevKwnBits / 8 + (curLevKwnBits % 8 ? 1 : 0);
-
-		if (bytesToCopy) {
-			maxBytes = cascade ? 3 : 4; //**
-			if (bytesToCopy > maxBytes) {
-				bytesToCopy = maxBytes;
-			}
-			for (int i = 0; i < bytesToCopy; i++) {
-				cmdBuff[index++] = tag->tag_id[idIndex + i];
-			}
-		}
-
-		if (cascade) {
-			curLevKwnBits += 8;
-		}
-
-		selDone = false;
-		while (!selDone) {
-			MFRC522_ClearBitMask(MFRC522_CollReg, 0x80);
-
-			if (curLevKwnBits >= 32) { /* Setup Select Command */
-				cmdBuff[1] = 0x70;
-				cmdBuff[6] = cmdBuff[2] ^ cmdBuff[3] ^ cmdBuff[4] ^ cmdBuff[5]; //BCC Calc
-				rc = MFRC522_CalculateCRC(cmdBuff, 7, &cmdBuff[7]); //CRC Calc
-                if (rc != PICC_STATUS_OK) {
-                    return rc;
-                }
-                txLastBits = 0;
-                rxAlign = 0;
-                buffUsed = 9;
-                rspnsBuff = &cmdBuff[6];
-                rspnsLen = 3; //SlAcK response
-            }
-            else { 			/* Perform ANTICOLLISION to get more bits of ID */
-                txLastBits = curLevKwnBits % 8;
-                rxAlign = txLastBits; //Send this many bits from last reg, start writing at same offset in same buffer
-                count = curLevKwnBits / 8;
-                index = 2 + count;
-                cmdBuff[1] = (index << 4) | txLastBits;
-                buffUsed = index + (txLastBits ? 1 : 0);
-                rspnsBuff = &cmdBuff[index];
-                rspnsLen = sizeof(cmdBuff) - index;
-            }
-
-            MFRC522_WriteRegister(MFRC522_BitFramingReg, (rxAlign << 4) + txLastBits);
-
-            rc = MFRC522_TransieveData(cmdBuff, buffUsed, rspnsBuff, &rspnsLen, &txLastBits, rxAlign, false);
-            if (rc == PICC_STATUS_COLLISION) {
-            	uint8_t valueOfCollReg = MFRC522_ReadRegister(MFRC522_CollReg);
-                if (valueOfCollReg & 0x20) { //Invalid Position of collision
-                	return PICC_STATUS_COLLISION;
-                }
-                uint8_t collisionPos = valueOfCollReg & 0x1F;
-                if (collisionPos == 0) {
-                    collisionPos = 32;
-                }
-
-                if (collisionPos <= curLevKwnBits) {
-                    return PICC_STATUS_INTERNAL_ERROR;
-                }
-                curLevKwnBits = collisionPos;
-                checkBit = (curLevKwnBits - 1) % 8;
-                count = curLevKwnBits % 8;
-                index = 1 + (curLevKwnBits / 8) + (count ? 1 : 0);
-                cmdBuff[index] &= ~(1 << checkBit); //Choose the tag with bit 0
-
-           } else if (rc != PICC_STATUS_OK) {
-        	   uart_printf("Error From transmission: 0x%X\r\n", rc);
-                    return rc;
-
-           } else {
-                if (curLevKwnBits >= 32) {
-                    selDone = true;
-                } else {
-                    curLevKwnBits = 32;
-                }
-			}
-		}
-
-        index = (cmdBuff[2] == PICC_CMD_CT) ? 3 : 2;
-        bytesToCopy = (cmdBuff[2] == PICC_CMD_CT) ? 3 : 4;
-        for (int i = 0; i < bytesToCopy; i++) {
-            tag->tag_id[idIndex + i] = cmdBuff[index++];
-        }
-
-        if (rspnsLen != 3 || txLastBits != 0) {
-            return PICC_STATUS_ERROR;
-        }
-        rc = MFRC522_CalculateCRC(rspnsBuff, 1, &cmdBuff[2]);
-        if (rc != PICC_STATUS_OK) {
-        	uart_printf("CRC Timeout");
-            return rc;
-        }
-        if ((cmdBuff[2] != rspnsBuff[1] || (cmdBuff[3] != rspnsBuff[2]))) {
-            return PICC_STATUS_CRC_WRONG;
-        }
-        if (rspnsBuff[0] & 0x04) {
-            cascadeLevel++;
-        } else {
-            complete = true;
-            tag->tag_slAck = rspnsBuff[0];
-        }
 	}
 	tag->tag_id_len = 3 * cascadeLevel + 1;
 	return PICC_STATUS_OK;

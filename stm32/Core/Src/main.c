@@ -199,7 +199,7 @@ int main(void)
 	uint8_t len = 2;
 	memset(&tag, 0, 16);
 	if (MFRC522_IsNewCardPresent()) {
-	  rc = MFRC522_Select(&tag);
+	  rc = MFRC522_SelectStart(&tag);
 	  if (rc == PICC_STATUS_OK) {
 		  uart_printf("Detected tag with ID: \r\n");
 		  hex_dump(tag.tag_id, 7);
@@ -210,7 +210,7 @@ int main(void)
 		  rc = MFRC522_WupAOrReqA(PICC_CMD_WUPA, buf, &len);
 		  if (rc == PICC_STATUS_OK) {
 			  uart_printf("Successfully woken\r\n");
-			  rc = MFRC522_Select(&tag);
+			  rc = MFRC522_SelectStart(&tag);
 			  if (rc == PICC_STATUS_OK) {
 				  uart_printf("Successful select 2.0\r\n");
 			  }
