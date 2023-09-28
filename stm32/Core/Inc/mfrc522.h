@@ -15,7 +15,7 @@ typedef enum {
 	PICC_CMD_SEL_CL1			= 0x93,
 	PICC_CMD_SEL_CL2			= 0x95,
 	PICC_CMD_SEL_CL3			= 0x98,
-	PICC_CMD_HLTA				= 0x40,
+	PICC_CMD_HLTA				= 0x50,
     PICC_CMD_AUTHENT1A      	= 0x60,
     PICC_CMD_AUTHENT1B      	= 0x61,
     PICC_CMD_READ           	= 0x30,
@@ -32,7 +32,7 @@ typedef enum {
 	PICC_STATUS_TIMEOUT			= 3,
 	PICC_STATUS_NO_ROOM			= 3,
 	PICC_STATUS_INTERNAL_ERROR	= 5,
-	PICC_STATUS_INVALID	= 6,
+	PICC_STATUS_INVALID			= 6,
 	PICC_STATUS_CRC_WRONG		= 7,
 	PICC_STATUS_MIFARE_NACK 	= 0xff
 } PICC_STATUS;
@@ -65,6 +65,7 @@ typedef struct {
 	uint8_t tag_slAck; //select acknowledge
 	uint8_t tag_token_id;
 	uint8_t tag_num;
+	uint8_t tag_known_bits;
 } Tag;
 
 typedef enum {
@@ -137,7 +138,9 @@ void MFRC522_SelfTest();
 void MFRC522_Halt();
 void MFRC522_version_dump();
 bool MFRC522_IsNewCardPresent();
-PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits);
+PICC_STATUS MFRC522_Select(Tag *tag);
+PICC_STATUS MFRC522_WupAOrReqA(PICC_CMD cmd, uint8_t *bufferATQA, uint8_t *bufferSize);
+void MFRC522_GetType(Tag tag);
 
 void MFRC522_buffTest();
 

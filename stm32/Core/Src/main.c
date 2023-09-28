@@ -27,6 +27,7 @@
 #include "event_manager.h"
 #include "serial_manager.h"
 #include "mfrc522.h"
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -187,26 +188,40 @@ int main(void)
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  uint8_t buf[2];
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	uint8_t validBits = 0;
 	PICC_STATUS rc;
 	Tag tag;
-	tag.tag_id_len = 7;
+	uint8_t len = 2;
+	memset(&tag, 0, 16);
 	if (MFRC522_IsNewCardPresent()) {
-	  rc = MFRC522_Select(&tag, &validBits);
+	  rc = MFRC522_Select(&tag);
 	  if (rc == PICC_STATUS_OK) {
 		  uart_printf("Detected tag with ID: \r\n");
 		  hex_dump(tag.tag_id, 7);
 		  MFRC522_Halt();
+		  if (rc != PICC_STATUS_OK) {
+			  uart_printf("Halt issue return code: %X\r\n", rc);
+		  }
+		  rc = MFRC522_WupAOrReqA(PICC_CMD_WUPA, buf, &len);
+		  if (rc == PICC_STATUS_OK) {
+			  uart_printf("Successfully woken\r\n");
+			  rc = MFRC522_Select(&tag);
+			  if (rc == PICC_STATUS_OK) {
+				  uart_printf("Successful select 2.0\r\n");
+			  }
+			  MFRC522_Halt();
+		  }
+		  MFRC522_GetType(tag);
 	  } else {
 		  uart_printf("Tag detected but couldn't select!\r\n");
 	  }
 	}
-	HAL_Delay(100);
+	HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }

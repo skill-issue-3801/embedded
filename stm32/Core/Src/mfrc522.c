@@ -30,7 +30,7 @@ void MFRC522_Init(void) {
 	MFRC522_WriteRegister(MFRC522_TReloadReg_H, 0x03);
 	MFRC522_WriteRegister(MFRC522_TReloadReg_L, 0xE8);
 	MFRC522_WriteRegister(MFRC522_TxASKReg, 0x40);
-	MFRC522_WriteRegister(MFRC522_TxModeReg, 0x3D);
+	MFRC522_WriteRegister(MFRC522_ModeReg, 0x3D);
 
 	MFRC522_WriteRegister(MFRC522_DivIEnReg, 0x80);
 	MFRC522_WriteRegister(MFRC522_DivIrqReg, 0x80);
@@ -135,6 +135,7 @@ PICC_STATUS MFRC522_CalculateCRC(uint8_t*  inputData, uint8_t inLen, uint8_t* CR
     	n = MFRC522_ReadRegister(MFRC522_DivIrqReg);
     	if (n & 0x04) {
     		//Read CRC calculation result
+    		MFRC522_DoCmd(MFRC522_CMD_IDLE);
     		CRCBytes[0] = MFRC522_ReadRegister(MFRC522_CRCResultReg_L);
     		CRCBytes[1] = MFRC522_ReadRegister(MFRC522_CRCResultReg_H);
     		return PICC_STATUS_OK;
@@ -180,7 +181,7 @@ void MFRC522_SelfTest() {
 
 PICC_STATUS MFRC522_CommunicateWithTag(MFRC522_CMD cmd, uint8_t waitIRq, uint8_t *sendData,
 									uint8_t sendLen, uint8_t *backData, uint8_t *backLen,
-									uint8_t *validBits, uint8_t rxAlign, bool checkCRC) {
+									uint8_t *validBits, uint8_t rxAlign, bool checkCRC, bool test) {
 
     uint8_t txLastBits, bitFraming, len, errorRegVal, iqrFlags;
     uint8_t valid = 0;
@@ -196,9 +197,9 @@ PICC_STATUS MFRC522_CommunicateWithTag(MFRC522_CMD cmd, uint8_t waitIRq, uint8_t
     MFRC522_DoCmd(MFRC522_CMD_IDLE);
 
     MFRC522_WriteRegister(MFRC522_ComIrqReg, 0x7F);
-
     MFRC522_FlushBuffer();
     MFRC522_WriteBuffer(sendData, sendLen);
+
     MFRC522_WriteRegister(MFRC522_BitFramingReg, bitFraming);
     MFRC522_DoCmd(cmd);
 
@@ -234,7 +235,7 @@ PICC_STATUS MFRC522_CommunicateWithTag(MFRC522_CMD cmd, uint8_t waitIRq, uint8_t
 
 
     if (backData && backLen) {
-        len = MFRC522_ReadBuffer(backData, *backLen);
+        len = MFRC522_ReadBuffer(backData, *backLen); //Not getting CRC bytes from tag
         if (len == 0) {
             return PICC_STATUS_NO_ROOM;
         }
@@ -273,7 +274,7 @@ PICC_STATUS MFRC522_TransieveData(uint8_t *sendData, size_t sendLen, uint8_t *ba
 							uint8_t *backLen, uint8_t *validBits, uint8_t rxAlign, bool checkCRC) {
 	uint8_t waitIRq = 0x30; //RxIRq and WaitIRq
 	return MFRC522_CommunicateWithTag(MFRC522_CMD_TRANSCEIVE, waitIRq, sendData, sendLen,
-										backData, backLen, validBits, rxAlign, checkCRC);
+										backData, backLen, validBits, rxAlign, checkCRC, false);
 }
 
 
@@ -333,18 +334,16 @@ void MFRC522_buffTest() {
 }
 
 void MFRC522_Halt(void) {
-	uint8_t len;
 	uint8_t buff[4];
-	uint8_t validBits, rxAlign = 0;
 
 	buff[0] = PICC_CMD_HLTA;
 	buff[1] = 0;
 
 	MFRC522_CalculateCRC(buff, 2, &buff[2]);
-	MFRC522_TransieveData(buff, 4, buff, &len, &validBits, rxAlign, true);
+	MFRC522_TransieveData(buff, 4, NULL, NULL, NULL, 0, true);
 }
 
-PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
+PICC_STATUS MFRC522_Select(Tag *tag) {
 	bool complete, selDone, cascade;
 	uint8_t cascadeLevel = 1;
 	uint8_t count, checkBit, index, idIndex;
@@ -354,6 +353,7 @@ PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
 	uint8_t cmdBuff[9];
 	uint8_t rspnsLen;
 	uint8_t *rspnsBuff;
+	uint8_t *validBits = &tag->tag_known_bits;
 
 	PICC_STATUS rc;
 
@@ -416,6 +416,8 @@ PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
 
 		selDone = false;
 		while (!selDone) {
+			MFRC522_ClearBitMask(MFRC522_CollReg, 0x80);
+
 			if (curLevKwnBits >= 32) { /* Setup Select Command */
 				cmdBuff[1] = 0x70;
 				cmdBuff[6] = cmdBuff[2] ^ cmdBuff[3] ^ cmdBuff[4] ^ cmdBuff[5]; //BCC Calc
@@ -442,7 +444,7 @@ PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
 
             MFRC522_WriteRegister(MFRC522_BitFramingReg, (rxAlign << 4) + txLastBits);
 
-            rc = MFRC522_TransieveData(cmdBuff, buffUsed, rspnsBuff, &rspnsLen, &txLastBits, rxAlign, true);
+            rc = MFRC522_TransieveData(cmdBuff, buffUsed, rspnsBuff, &rspnsLen, &txLastBits, rxAlign, false);
             if (rc == PICC_STATUS_COLLISION) {
             	uint8_t valueOfCollReg = MFRC522_ReadRegister(MFRC522_CollReg);
                 if (valueOfCollReg & 0x20) { //Invalid Position of collision
@@ -457,12 +459,13 @@ PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
                     return PICC_STATUS_INTERNAL_ERROR;
                 }
                 curLevKwnBits = collisionPos;
-                checkBit = curLevKwnBits / 8;
+                checkBit = (curLevKwnBits - 1) % 8;
                 count = curLevKwnBits % 8;
                 index = 1 + (curLevKwnBits / 8) + (count ? 1 : 0);
                 cmdBuff[index] &= ~(1 << checkBit); //Choose the tag with bit 0
 
            } else if (rc != PICC_STATUS_OK) {
+        	   uart_printf("Error From transmission: 0x%X\r\n", rc);
                     return rc;
 
            } else {
@@ -485,6 +488,7 @@ PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
         }
         rc = MFRC522_CalculateCRC(rspnsBuff, 1, &cmdBuff[2]);
         if (rc != PICC_STATUS_OK) {
+        	uart_printf("CRC Timeout");
             return rc;
         }
         if ((cmdBuff[2] != rspnsBuff[1] || (cmdBuff[3] != rspnsBuff[2]))) {
@@ -499,4 +503,41 @@ PICC_STATUS MFRC522_Select(Tag *tag, uint8_t *validBits) {
 	}
 	tag->tag_id_len = 3 * cascadeLevel + 1;
 	return PICC_STATUS_OK;
+}
+
+void MFRC522_GetType(Tag tag) {
+	uint8_t SlAck = tag.tag_slAck & 0x7F;
+	uart_printf("Give tag is of type: \r\n:");
+	switch (SlAck) {
+		case 0x04:
+			uart_printf("Incomplete\r\n");
+			break;
+		case 0x09:
+			uart_printf("MiFare mini\r\n");
+			break;
+		case 0x08:
+			uart_printf("MiFare mini 1K\r\n");
+			break;
+		case 0x18:
+			uart_printf("MiFare mini 4K\r\n");
+			break;
+		case 0x00:
+			uart_printf("MiFare mini UL\r\n");
+			break;
+		case 0x10:
+		case 0x11:
+			uart_printf("MiFare mini plus\r\n");
+			break;
+		case 0x01:
+			uart_printf("TNP3XXX\r\n");
+			break;
+		case 0x20:
+			uart_printf("ISO_14443_4\r\n");
+			break;
+		case 0x40:
+			uart_printf("ISO_18092\r\n");
+			break;
+		default:
+			uart_printf("Unknown\r\n");
+	}
 }
