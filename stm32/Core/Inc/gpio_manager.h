@@ -16,7 +16,13 @@
 // ADC relevant defines
 #define ADC_12BIT_MAX_VAL		4095
 #define ADC_VDD					5.0
-#define ADC_THRESHOLDS			5
+
+#define THRESH_5_UPPER			5.0
+#define THRESH_4_UPPER			4.2
+#define THRESH_3_UPPER			3.4
+#define THRESH_2_UPPER			2.4
+#define THRESH_1_UPPER			1.6
+#define THRESH_0_UPPER			0.8
 
 #define ADC_PC0_INDX			0
 #define ADC_PC1_INDX			1

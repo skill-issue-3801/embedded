@@ -1,22 +1,20 @@
 # ---- Here we can define the matching keybinds to javascript actions ---- #
 # Define button exclusive keybinds
-BUTTON_WEEK_LEFT        = 'Z'
-BUTTON_WEEK_RIGHT       = 'X'
-BUTTON_SCROLL_UP        = 'C'
-BUTTON_SCROLL_DWN       = 'V'
+VIEW_WEEK_BACK        = 'B'
+VIEW_WEEK_FORWARD     = 'F'
+VIEW_SCROLL_UP        = 'U'
+VIEW_SCROLL_DOWN      = 'D'
 
 # Define the ADC/potentiometer exclusive actions
-ADC_SCREEN_BRIGHT_UP    = 'Q'
-ADC_SCREEN_BRIGHT_DOWN  = 'W'
+SCREEN_BRIGHT_UP    = 'Q'
+SCREEN_BRIGHT_DOWN  = 'W'
 
 # Defines for user control. Used by buttons for users and the NFC
-USER_TOGGLE_1           = "1"
-USER_TOGGLE_2           = "2"
-USER_TOGGLE_3           = "3"
-USER_TOGGLE_4           = "4"
+SELECT_USER1           = "0"
+SELECT_USER2           = "1"
+SELECT_USER3           = "2"
+SELECT_USER4           = "3"
 
 # Defines user modification operations
-USERS_HIDE              = "5"
-USERS_SHOW              = "6"
 USERS_BRIGHT_UP         = "7"
 USERS_BRIGHT_DOWN       = "8"

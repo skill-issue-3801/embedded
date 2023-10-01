@@ -17,27 +17,28 @@
 
 #define BTN_EVENT_RANGE	0x000FF
 
-#define PC2_EVENT_BIT	0x01
-#define PC3_EVENT_BIT	0x02
-#define PC10_EVENT_BIT	0x04
-#define PC11_EVENT_BIT	0x08
-#define PC12_EVENT_BIT	0x10
-#define PC13_EVENT_BIT	0x20
-#define PH0_EVENT_BIT	0x40
-#define PH1_EVENT_BIT	0x80
+#define EVENT_SELECT_USER1	0x01
+#define EVENT_SELECT_USER2	0x02
+#define EVENT_SELECT_USER3	0x04
+#define EVENT_SELECT_USER4	0x08
+#define EVENT_VIEW_UP		0x10
+#define EVENT_VIEW_DOWN		0x20
+#define EVENT_VIEW_LEFT		0x40
+#define EVENT_VIEW_RIGHT	0x80
 
-#define PC2_VALUE		0x01
-#define PC3_VALUE 		0x02
-#define PC10_VALUE 		0x03
-#define PC11_VALUE		0x04
-#define PC12_VALUE		0x05
-#define PC13_VALUE		0x06
-#define PH0_VALUE		0x07
-#define PH1_VALUE		0x08
+#define VALUE_SELECT_USER1	0x01
+#define VALUE_SELECT_USER2 	0x02
+#define VALUE_SELECT_USER3 	0x03
+#define VALUE_SELECT_USER4	0x04
+#define VALUE_VIEW_UP		0x05
+#define VALUE_VIEW_DOWN		0x06
+#define VALUE_VIEW_LEFT		0x07
+#define VALUE_VIEW_RIGHT	0x08
 
 /* Function definitions */
-int eventManagerInit(void);
+int eventManagerInit (void);
 void eventManagerTask (void* argument);
+void eventManagerSetBit ();
 void eventManagerSetBitISR ();
 
 #endif /* INC_EVENT_MANAGER_H_ */

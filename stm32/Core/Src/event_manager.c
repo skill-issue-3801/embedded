@@ -13,11 +13,13 @@
 #include "event_groups.h"
 
 /* Other function dependencies */
+#include "main.h"
 #include "stm32l4xx_hal.h"
 #include "serial_manager.h"
 
 /* Function definitions */
 void handlerButtonBits (EventBits_t bits);
+void toggle_user_select (char user_index);
 
 /* Private Variables */
 EventGroupHandle_t xEventGroup; // Currently 24 bits set, check configUSE_16_BIT_TICKS in FreeRTOSConfig.h
@@ -28,7 +30,7 @@ EventGroupHandle_t xEventGroup; // Currently 24 bits set, check configUSE_16_BIT
  * @param	None
  * @reval	The success of creation the EventGroup, -1 on failure, 0 otherwise.
  */
-int eventManagerInit(void) {
+int eventManagerInit (void) {
 
 	xEventGroup = xEventGroupCreate();
 
@@ -67,10 +69,24 @@ void eventManagerTask (void* argument) {
 }
 
 /*
+ *@brief	Outward facing bit setting function for other files to interact
+ * 			with the event manager via the bit flags. Uses inbuilt eventGroup
+ * 			safeties to ensure atomic actions and no race conditions.
+ * 			Variant for non-ISR specific operations.
+ * @param	bits:	The bit flag for the event (refer to event_manager.h
+ * 					for bits flag definitions).
+ * @retval	None.
+ */
+void eventManagerSetBit (EventBits_t bits) {
+
+	xEventGroupSetBits(xEventGroup, bits);
+}
+
+/*
  * @brief	Outward facing bit setting function for other files to interact
  * 			with the event manager via the bit flags. Uses inbuilt eventGroup
  * 			safeties to ensure atomic actions and no race conditions.
- * 			Variant for ISR specific sets.
+ * 			Variant for ISR specific operations.
  * @param	bits:	The bit flag for the event (refer to event_manager.h
  * 					for bits flag definitions).
  * @retval	None.
@@ -95,20 +111,58 @@ void handlerButtonBits (uint32_t bits) {
 
 	bits = bits & BTN_EVENT_RANGE;
 
-	if (bits & PC2_EVENT_BIT)
-		serialSendButtonMessage(PC2_VALUE);
-	if (bits & PC3_EVENT_BIT)
-		serialSendButtonMessage(PC3_VALUE);
-	if (bits & PC10_EVENT_BIT)
-		serialSendButtonMessage(PC10_VALUE);
-	if (bits & PC11_EVENT_BIT)
-		serialSendButtonMessage(PC11_VALUE);
-	if (bits & PC12_EVENT_BIT)
-		serialSendButtonMessage(PC12_VALUE);
-	if (bits & PC13_EVENT_BIT)
-		serialSendButtonMessage(PC13_VALUE);
-	if (bits & PH0_EVENT_BIT)
-		serialSendButtonMessage(PH0_VALUE);
-	if (bits & PH1_EVENT_BIT)
-		serialSendButtonMessage(PH1_VALUE);
+	// Check our user selection first, set any LEDs as appropriate
+	if (bits & EVENT_SELECT_USER1) {
+		serialSendButtonMessage(VALUE_SELECT_USER1);
+		toggle_user_select(1);
+	}
+	if (bits & EVENT_SELECT_USER2) {
+		serialSendButtonMessage(VALUE_SELECT_USER2);
+		toggle_user_select(2);
+	}
+	if (bits & EVENT_SELECT_USER3) {
+		serialSendButtonMessage(VALUE_SELECT_USER3);
+		toggle_user_select(3);
+	}
+	if (bits & EVENT_SELECT_USER4) {
+		serialSendButtonMessage(VALUE_SELECT_USER4);
+		toggle_user_select(4);
+	}
+
+	// Check our view control buttons next
+	if (bits & EVENT_VIEW_UP)
+		serialSendButtonMessage(VALUE_VIEW_UP);
+	if (bits & EVENT_VIEW_DOWN)
+		serialSendButtonMessage(VALUE_VIEW_DOWN);
+	if (bits & EVENT_VIEW_LEFT)
+		serialSendButtonMessage(VALUE_VIEW_LEFT);
+	if (bits & EVENT_VIEW_RIGHT)
+		serialSendButtonMessage(VALUE_VIEW_RIGHT);
+}
+
+/**
+ * @brief	GPIO control function for toggling user LED operation. Shows
+ * 			which user has been "selected"
+ * @param	user_index:	The index of the user to be set. Positions are indexed
+ * 						1 to 4
+ * @retval	None.
+ */
+void toggle_user_select (char user_index) {
+
+	switch (user_index) {
+	case 1 :
+		HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
+		break;
+	case 2 :
+		HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
+		break;
+	case 3 :
+		HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
+		break;
+	case 4 :
+		HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
+		break;
+	default :
+		break;
+	}
 }

@@ -23,6 +23,7 @@ extern ADC_HandleTypeDef 	hadc1;
 /* Function definitions */
 float gpio_adc_calcvalue(uint32_t raw_adc, float vdd);
 void fading_average(float* storage, float new_value, float alpha);
+void adc_threshold (float value, float *prev_thresh, char index);
 
 /* Private Variables */
 uint32_t PC2_LastPress 	= 0;
@@ -34,6 +35,16 @@ uint32_t PC13_LastPress = 0;
 uint32_t PH0_LastPress 	= 0;
 uint32_t PH1_LastPress 	= 0;
 uint32_t adc_values[ADC_COUNT];
+
+/* ADC enumerator */
+enum Threshold {
+	THRESH0,
+	THRESH1,
+	THRESH2,
+	THRESH3,
+	THRESH4,
+	THRESH5
+};
 
 /*
  * @brief	Initialise the ADC for future GPIO interactions.
@@ -62,17 +73,15 @@ void gpioManagerTask (void* argument) {
 	// Const defines for operation
 	const TickType_t msDelay = GPIO_MANAGER_SLEEP_MS / portTICK_PERIOD_MS;
 	const float fade_alpha = 0.8;
-	const float thresh_width = ADC_VDD / ADC_THRESHOLDS;
 
 	// Fading average variables
 	float pc0_adc_avg = 0;
 	float pc1_adc_avg = 0;
-	float pc0_thresh = -1;
-	float pc1_thresh = -1;
+	float pc0_thresh = THRESH5;
+	float pc1_thresh = THRESH5;
 
 	// Variables for performing operations, made for eye considerations
 	uint32_t sample;
-	float sample_thresh;
 
 	for (;;) {
 		// Calculate ADC values
@@ -83,45 +92,15 @@ void gpioManagerTask (void* argument) {
 		fading_average(&pc1_adc_avg, sample, fade_alpha);
 
 		// Find if an ADC value has entered a new threshold
-		sample_thresh = floorf(pc0_adc_avg / thresh_width);
-		if (sample_thresh != pc0_thresh) {
-			pc0_thresh = sample_thresh;
-			serialSendADCMessage(ADC_PC0_INDX, pc0_thresh);
-		}
+		adc_threshold(pc0_adc_avg, &pc0_thresh, ADC_PC0_INDX);
+		adc_threshold(pc1_adc_avg, &pc1_thresh, ADC_PC1_INDX);
 
-		sample_thresh = floorf(pc1_adc_avg / thresh_width);
-		if (sample_thresh != pc1_thresh) {
-			pc1_thresh = sample_thresh;
-			serialSendADCMessage(ADC_PC1_INDX, pc1_thresh);
-		}
-
+		// Get new ADC values and sleep this task.
 		HAL_ADC_Start_DMA(&hadc1, adc_values, ADC_COUNT);
 		vTaskDelay(msDelay);
 	}
 }
 
-/**
- * @brief
- */
-void toggle_user_select (char user_index) {
-
-	switch (user_index) {
-	case 1 :
-		HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
-		break;
-	case 2 :
-		HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
-		break;
-	case 3 :
-		HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
-		break;
-	case 4 :
-		HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
-		break;
-	default :
-		break;
-	}
-}
 
 /*
  * @brief	Find the voltage value of the ADC.
@@ -130,7 +109,7 @@ void toggle_user_select (char user_index) {
  * @param	vdd		Supply voltage the ADC is using
  * @return	The voltage of the adc sample.
  */
-float gpio_adc_calcvalue(uint32_t raw_adc, float vdd) {
+float gpio_adc_calcvalue (uint32_t raw_adc, float vdd) {
 
 	return (raw_adc / 4095.0 * vdd);
 }
@@ -143,9 +122,44 @@ float gpio_adc_calcvalue(uint32_t raw_adc, float vdd) {
  * @param	alpha		The fading factor to utilise.
  * @return	None.
  */
-void fading_average(float* storage, float new_value, float alpha) {
+void fading_average (float* storage, float new_value, float alpha) {
 
 	*storage = new_value*alpha + (1.0-alpha)*storage[0];
+}
+
+/*
+ * @brief	Find the threshold the ADC value sits in. If the new threshold is
+ * 			different to the previous threshold, send new threshold via
+ * 			serial.
+ * @param	value: The current float value of the ADC value.
+ * @param	prev_thresh: Pointer to the previous threshold the ADC value occupied.
+ * @param	index: Index of the ADC being checked.
+ * @return	None.
+ */
+void adc_threshold (float value, float *prev_thresh, char index) {
+
+	float thresh_now = 0;
+
+	// Find the threshold the ADC value occupies.
+	if (THRESH_4_UPPER < value && value <= THRESH_5_UPPER)
+		thresh_now = THRESH5;
+	else if (THRESH_3_UPPER < value && value <= THRESH_4_UPPER)
+		thresh_now = THRESH4;
+	else if (THRESH_2_UPPER < value && value <= THRESH_3_UPPER)
+		thresh_now = THRESH3;
+	else if (THRESH_1_UPPER < value && value <= THRESH_2_UPPER)
+		thresh_now = THRESH2;
+	else if (THRESH_0_UPPER < value && value <= THRESH_1_UPPER)
+		thresh_now = THRESH1;
+	else
+		thresh_now = THRESH0;
+
+	// Check if different
+	if (thresh_now != *prev_thresh) {
+		// Different thresh found, set the tracker variable and send via
+		*prev_thresh = thresh_now;
+		serialSendADCMessage(index, thresh_now);
+	}
 }
 
 
@@ -162,43 +176,42 @@ void HAL_GPIO_EXTI_Callback (uint16_t GPIO_Pin) {
 
 	if (GPIO_Pin == PB_PC2_Pin) {
 		if ((tick_now - PC2_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PC2_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_VIEW_UP);
 			PC2_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PC3_Pin) {
 		if ((tick_now - PC3_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PC3_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_VIEW_DOWN);
 			PC3_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PC10_Pin) {
 		if ((tick_now - PC10_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PC10_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_SELECT_USER1);
 			PC10_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PC11_Pin) {
 		if ((tick_now - PC11_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PC11_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_SELECT_USER2);
 			PC11_LastPress = tick_now;
-			toggle_user_select(1);
 		}
 	} else if (GPIO_Pin == PB_PC12_Pin) {
 		if ((tick_now - PC12_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PC12_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_SELECT_USER3);
 			PC12_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PC13_Pin) {
 		if ((tick_now - PC13_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PC13_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_SELECT_USER4);
 			PC13_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PH0_Pin) {
 		if ((tick_now - PH0_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PH0_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_VIEW_LEFT);
 			PH0_LastPress = tick_now;
 		}
 	} else if (GPIO_Pin == PB_PH1_Pin) {
 		if ((tick_now - PH1_LastPress) > PB_DEBOUNCE_THRESH_MS) {
-			eventManagerSetBitISR(PH1_EVENT_BIT);
+			eventManagerSetBitISR(EVENT_VIEW_RIGHT);
 			PH1_LastPress = tick_now;
 		}
 	}
