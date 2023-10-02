@@ -8,6 +8,8 @@
 #ifndef INC_EVENT_MANAGER_H_
 #define INC_EVENT_MANAGER_H_
 
+#include <stdint.h>
+
 #define EVENT_MANAGER_SLEEP_MS 100
 
 // Currently 24 bits set, check configUSE_16_BIT_TICKS in FreeRTOSConfig.h -> 0 means 24, 1 means 8
@@ -40,5 +42,7 @@ int eventManagerInit (void);
 void eventManagerTask (void* argument);
 void eventManagerSetBit ();
 void eventManagerSetBitISR ();
+
+void trigger_event(uint32_t bits);
 
 #endif /* INC_EVENT_MANAGER_H_ */

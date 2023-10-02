@@ -10,5 +10,6 @@
 
 void hex_dump(uint8_t *buffer, uint8_t len);
 void uart_printf(const char *fmt, ...);
+void indexing_hexdump(uint8_t* buffer, uint8_t len, uint8_t bytesPerPage, uint8_t from);
 
 #endif /* SRC_UART_SERIAL_FUNCTIONS_H_ */

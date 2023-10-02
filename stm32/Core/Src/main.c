@@ -80,6 +80,13 @@ const osThreadAttr_t gpioManager_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
   .stack_size = 128 * 4
 };
+
+osThreadId_t NFCManagerHandle;
+const osThreadAttr_t NFCManager_attributes = {
+  .name = "NFCManager",
+  .priority = (osPriority_t) osPriorityNormal,
+  .stack_size = 128 * 4
+};
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -107,7 +114,7 @@ void badCustomInit(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-//  int ret = 0;
+  int ret = 0;
   //uint8_t buf[64]; // lachie code kept for merge
   /* USER CODE END 1 */
 
@@ -140,16 +147,16 @@ int main(void)
   //TM_MFRC522_version_dump();
   //TM_MFRC522_SelfTest(buf);
 
-//  ret |= eventManagerInit();
-//  ret |= serialManagerInit();
-//  ret |= gpioManagerInit();
+  ret |= eventManagerInit();
+  ret |= serialManagerInit();
+  ret |= gpioManagerInit();
 //
 //  if (ret)
 //	  badCustomInit();
-//  /* USER CODE END 2 */
-//
-//  /* Init scheduler */
-//  osKernelInitialize();
+  /* USER CODE END 2 */
+
+  /* Init scheduler */
+  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -169,13 +176,14 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of defaultTask */
-//  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-//
-//  /* USER CODE BEGIN RTOS_THREADS */
+  //defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
 //  /* add threads, ... */
-//  eventManagerHandle = osThreadNew(eventManagerTask, NULL, &eventManager_attributes);
-//  serialManagerHandle = osThreadNew(serialManagerTask, NULL, &serialManager_attributes);
-//  gpioManagerHandle = osThreadNew(gpioManagerTask, NULL, &gpioManager_attributes);
+  eventManagerHandle = osThreadNew(eventManagerTask, NULL, &eventManager_attributes);
+  serialManagerHandle = osThreadNew(serialManagerTask, NULL, &serialManager_attributes);
+  gpioManagerHandle = osThreadNew(gpioManagerTask, NULL, &gpioManager_attributes);
+  NFCManagerHandle = osThreadNew(NFCTask, NULL, &NFCManager_attributes);
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -183,47 +191,18 @@ int main(void)
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
-//  osKernelStart();
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  uint8_t buf[2];
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	PICC_STATUS rc;
-	Tag tag;
-	uint8_t len = 2;
-	memset(&tag, 0, 16);
-	if (MFRC522_IsNewCardPresent()) {
-	  rc = MFRC522_Select(&tag);
-	  if (rc == PICC_STATUS_OK) {
-		  uart_printf("Detected tag with ID: \r\n");
-		  hex_dump(tag.tag_id, 7);
-		  MFRC522_Halt();
-		  if (rc != PICC_STATUS_OK) {
-			  uart_printf("Halt issue return code: %X\r\n", rc);
-		  }
-		  rc = MFRC522_WupAOrReqA(PICC_CMD_WUPA, buf, &len);
-		  if (rc == PICC_STATUS_OK) {
-			  uart_printf("Successfully woken\r\n");
-			  rc = MFRC522_Select(&tag);
-			  if (rc == PICC_STATUS_OK) {
-				  uart_printf("Successful select 2.0\r\n");
-			  }
-			  MFRC522_Halt();
-		  }
-		  MFRC522_GetType(tag);
-	  } else {
-		  uart_printf("Tag detected but couldn't select!\r\n");
-	  }
-	}
-	HAL_Delay(10);
-  }
   /* USER CODE END 3 */
+  }
 }
 
 /**
@@ -590,7 +569,6 @@ void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
-
   /* USER CODE END Error_Handler_Debug */
 }
 

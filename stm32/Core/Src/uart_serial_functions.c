@@ -10,14 +10,31 @@
 #include <stdint.h>
 
 #include "main.h"
+#include "uart_serial_functions.h"
 
 extern UART_HandleTypeDef huart2;
+
+void indexing_hexdump(uint8_t* buffer, uint8_t len, uint8_t bytesPerPage, uint8_t from) {
+	char buf[10];
+	int j = from;
+	memset(buf, 0, 5);
+	for (int i = 0; i < len; i++) {
+		if ((i % bytesPerPage == 0)) {
+			if (i != 0) {
+				uart_printf("\r\n");
+			}
+			uart_printf("[%d] ", j++);
+		}
+		uart_printf("0x%0X ", buffer[i]);
+	}
+	uart_printf("\r\n");
+}
 
 void hex_dump(uint8_t* buffer, uint8_t len) {
 	char buf[10];
 	memset(buf, 0, 5);
 	for (int i = 0; i < len; i++) {
-		if (i % 10 == 0) {
+		if ((i % 4 == 0) && (i != 0)) {
 			uart_printf("\r\n");
 		}
 		uart_printf("0x%0X ", buffer[i]);

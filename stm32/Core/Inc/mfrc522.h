@@ -23,6 +23,7 @@ typedef enum {
     PICC_CMD_DECREMENT      	= 0xC0,
     PICC_CMD_RESTORE       		= 0xC2,
     PICC_CMD_TRANSFER      		= 0xB0,
+	PICC_CMD_MIFARE_READ		= 0x30
 } PICC_CMD;
 
 typedef enum {
@@ -62,10 +63,11 @@ typedef struct {
 typedef struct {
 	uint8_t tag_id_len;
 	uint8_t tag_id[10];
+	uint8_t tag_id_known_bits;
 	uint8_t tag_slAck; //select acknowledge
 	uint8_t tag_token_id;
 	uint8_t tag_num;
-	uint8_t tag_known_bits;
+	bool present;
 } Tag;
 
 typedef enum {
@@ -138,9 +140,13 @@ void MFRC522_SelfTest();
 void MFRC522_Halt();
 void MFRC522_version_dump();
 bool MFRC522_IsNewCardPresent();
-PICC_STATUS MFRC522_Select(Tag *tag);
+PICC_STATUS MFRC522_SelectStart(Tag *tag);
 PICC_STATUS MFRC522_WupAOrReqA(PICC_CMD cmd, uint8_t *bufferATQA, uint8_t *bufferSize);
+PICC_STATUS MFRC522_Read(uint8_t blockAddr, uint8_t *readBuf, uint8_t *bufLen);
 void MFRC522_GetType(Tag tag);
+bool MFRC522_WakeupCards();
+
+void NFCTask(void *argument);
 
 void MFRC522_buffTest();
 
