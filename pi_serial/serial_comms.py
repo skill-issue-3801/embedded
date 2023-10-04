@@ -98,7 +98,7 @@ def handle_adc (adc_index : int, adc_value : int) :
 
 # Need to change COM5 to 
 def main() :
-    ser = serial.Serial('COM5', 115200, timeout=0.1)
+    ser = serial.Serial('COM7', 115200, timeout=0.1)
     data = ser.readline()
 
     try :

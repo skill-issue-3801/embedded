@@ -85,12 +85,8 @@ void gpioManagerTask (void* argument) {
 
 	for (;;) {
 		// Calculate ADC values
-		sample = gpio_adc_calcvalue(adc_values[0], ADC_VDD);
-		fading_average(&pc0_adc_avg, sample, fade_alpha);
-
-		sample = gpio_adc_calcvalue(adc_values[1], ADC_VDD);
-		fading_average(&pc1_adc_avg, sample, fade_alpha);
-
+		pc0_adc_avg = gpio_adc_calcvalue(adc_values[0], ADC_VDD);
+		pc1_adc_avg = gpio_adc_calcvalue(adc_values[1], ADC_VDD);
 		// Find if an ADC value has entered a new threshold
 		adc_threshold(pc0_adc_avg, &pc0_thresh, ADC_PC0_INDX);
 		adc_threshold(pc1_adc_avg, &pc1_thresh, ADC_PC1_INDX);

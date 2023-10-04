@@ -152,19 +152,15 @@ void toggle_user_select (char user_index) {
 	switch (user_index) {
 	case 1 :
 		HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
-		uart_printf("Token 1\r\n");
 		break;
 	case 2 :
 		HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
-		uart_printf("Token 2\r\n");
 		break;
 	case 3 :
 		HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
-		uart_printf("Token 3\r\n");
 		break;
 	case 4 :
 		HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
-		uart_printf("Token 4\r\n");
 		break;
 	default :
 		break;

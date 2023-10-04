@@ -641,7 +641,6 @@ void NFCTask(void *argument)
 			}
 		}
 		if (MFRC522_SelectStart(&tags[i]) == PICC_STATUS_OK) {
-			uart_printf("boop\r\n");
 
 			if (PICC_ID_Equal(tags[i].tag_id, user1id)) {
 				trigger_event(EVENT_SELECT_USER1);

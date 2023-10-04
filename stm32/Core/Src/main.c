@@ -201,8 +201,8 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-  /* USER CODE END 3 */
   }
+  /* USER CODE END 3 */
 }
 
 /**
@@ -307,7 +307,7 @@ static void MX_ADC1_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_6CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
@@ -535,6 +535,10 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+//	HAL_GPIO_TogglePin(USER_LED_1_GPIO_Port, USER_LED_1_Pin);
+//	HAL_GPIO_TogglePin(USER_LED_2_GPIO_Port, USER_LED_2_Pin);
+//	HAL_GPIO_TogglePin(USER_LED_3_GPIO_Port, USER_LED_3_Pin);
+//	HAL_GPIO_TogglePin(USER_LED_4_GPIO_Port, USER_LED_4_Pin);
     osDelay(5000);
   }
   /* USER CODE END 5 */
