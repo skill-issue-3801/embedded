@@ -72,16 +72,12 @@ void gpioManagerTask (void* argument) {
 
 	// Const defines for operation
 	const TickType_t msDelay = GPIO_MANAGER_SLEEP_MS / portTICK_PERIOD_MS;
-	const float fade_alpha = 0.8;
 
 	// Fading average variables
 	float pc0_adc_avg = 0;
 	float pc1_adc_avg = 0;
 	float pc0_thresh = THRESH5;
 	float pc1_thresh = THRESH5;
-
-	// Variables for performing operations, made for eye considerations
-	uint32_t sample;
 
 	for (;;) {
 		// Calculate ADC values
