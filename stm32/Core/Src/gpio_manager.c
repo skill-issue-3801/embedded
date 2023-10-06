@@ -76,8 +76,8 @@ void gpioManagerTask (void* argument) {
 	// Fading average variables
 	float pc0_adc_avg = 0;
 	float pc1_adc_avg = 0;
-	float pc0_thresh = THRESH5;
-	float pc1_thresh = THRESH5;
+	float pc0_thresh = THRESH0;
+	float pc1_thresh = THRESH0;
 
 	for (;;) {
 		// Calculate ADC values
@@ -134,17 +134,17 @@ void adc_threshold (float value, float *prev_thresh, char index) {
 
 	// Find the threshold the ADC value occupies.
 	if (THRESH_4_UPPER < value && value <= THRESH_5_UPPER)
-		thresh_now = THRESH5;
-	else if (THRESH_3_UPPER < value && value <= THRESH_4_UPPER)
-		thresh_now = THRESH4;
-	else if (THRESH_2_UPPER < value && value <= THRESH_3_UPPER)
-		thresh_now = THRESH3;
-	else if (THRESH_1_UPPER < value && value <= THRESH_2_UPPER)
-		thresh_now = THRESH2;
-	else if (THRESH_0_UPPER < value && value <= THRESH_1_UPPER)
-		thresh_now = THRESH1;
-	else
 		thresh_now = THRESH0;
+	else if (THRESH_3_UPPER < value && value <= THRESH_4_UPPER)
+		thresh_now = THRESH1;
+	else if (THRESH_2_UPPER < value && value <= THRESH_3_UPPER)
+		thresh_now = THRESH2;
+	else if (THRESH_1_UPPER < value && value <= THRESH_2_UPPER)
+		thresh_now = THRESH3;
+	else if (THRESH_0_UPPER < value && value <= THRESH_1_UPPER)
+		thresh_now = THRESH4;
+	else
+		thresh_now = THRESH5;
 
 	// Check if different
 	if (thresh_now != *prev_thresh) {
