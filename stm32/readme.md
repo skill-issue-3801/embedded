@@ -46,4 +46,6 @@ As of current this just exists as an external power source for the NFC module. I
 ### Input Switches and Dials
 SPST Switches are used as buttons, Potentiometers as dials, and Green LEDs as indicator lights, these are the main interface switches in the system. The buttons are used as user selection if an NFC tag is not usable. The potentiometers control the brightness of selected user events. The LEDS are used an an indication of which user is currently selected. Otherwise, the other switches are used for scrolling and viewing future and past weeks. 
 
-## Pinout Diagram
+## Pinout
+The pinout for the embedded systems is managed in the `/3801_Serial.ioc` file. Changing the pins in this file updates the pins used in all other files in the workspace. The defined pinout is as follows:
+
