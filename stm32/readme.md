@@ -48,4 +48,27 @@ SPST Switches are used as buttons, Potentiometers as dials, and Green LEDs as in
 
 ## Pinout
 The pinout for the embedded systems is managed in the `/3801_Serial.ioc` file. Changing the pins in this file updates the pins used in all other files in the workspace. The defined pinout is as follows:
-
+#### SPST Switches
+* User 1 - PC10
+* User 2 - PC11
+* User 3 - PC12
+* User 4 - PC13
+* View Up - PC2
+* View Down - PC3
+* View Left - PH0
+* View Right - PH1
+#### Green LEDs
+* User 1 - PC9
+* User 2 - PC8
+* User 3 - PC7
+* User 4 - PC6
+#### Potentiometers
+* Screen Brightness - PC0
+* User Brightness - PC1
+#### RFID Module
+* SCL - PB6
+* SDA - PB7
+* IRQ - PA7
+* RST - PA6
+* 3.3V - Xiao 3.3V
+* GND - Xiao GND
