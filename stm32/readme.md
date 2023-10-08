@@ -14,7 +14,7 @@ The Project uses the following hardware.
  * [NUCLEO-L476RG Development Board](https://www.st.com/en/evaluation-tools/nucleo-l476rg.html) by ST Microelectronics
  * [PiicoDev RFID Module (NFC 13.56MHz)](https://core-electronics.com.au/piicodev-rfid-module.html) by Core Electronics
  * [XIAO SAMD21(Seeeduino XIAO)](https://www.seeedstudio.com/Seeeduino-XIAO-Arduino-Microcontroller-SAMD21-Cortex-M0+-p-4426.html) by Seeed Studio
- * [RFID/NFC Tag 25mm Coin (NTAG213 Chip, 13.56MHz)](https://core-electronics.com.au/rfid-nfc-tag-25mm-coin-ntag213-chip-13-56mhz-pack-of-5.html)
+ * [RFID/NFC Tag 25mm Coin (NTAG213 Chip, 13.56MHz)](https://core-electronics.com.au/rfid-nfc-tag-25mm-coin-ntag213-chip-13-56mhz-pack-of-5.html) x 4
  * SPST (Single Pole Single Throw) Switches x 8
  * 5mm Green LEDS x 4
  * 10k Linear Single Gang Potentiometers x 2
