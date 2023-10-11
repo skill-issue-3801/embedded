@@ -1,13 +1,13 @@
 # ---- Here we can define the matching keybinds to javascript actions ---- #
 # Define button exclusive keybinds
-VIEW_WEEK_BACK        = 'B'
-VIEW_WEEK_FORWARD     = 'F'
-VIEW_SCROLL_UP        = 'U'
-VIEW_SCROLL_DOWN      = 'D'
+VIEW_WEEK_BACK        = 'b'
+VIEW_WEEK_FORWARD     = 'f'
+VIEW_SCROLL_UP        = 'u'
+VIEW_SCROLL_DOWN      = 'd'
 
 # Define the ADC/potentiometer exclusive actions
-SCREEN_BRIGHT_UP    = 'Q'
-SCREEN_BRIGHT_DOWN  = 'W'
+SCREEN_BRIGHT_UP    = 'q'
+SCREEN_BRIGHT_DOWN  = 'w'
 
 # Defines for user control. Used by buttons for users and the NFC
 SELECT_USER1           = "0"
