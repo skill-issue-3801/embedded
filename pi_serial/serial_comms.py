@@ -1,6 +1,6 @@
 import serial
-import pynput
 import keyboard
+import keybinds
 
 # Defines for our message types
 MSG_TYPE_BTN = 1
