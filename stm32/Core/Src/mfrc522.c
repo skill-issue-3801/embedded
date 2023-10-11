@@ -332,8 +332,7 @@ bool MFRC522_WakeupCards() {
 
     MFRC522_WriteRegister(MFRC522_ModWidthReg, 0x26);
 
-    result = MFRC522_WupAOrReqA(PICC_CMD_WUPA, bufferATQA, &bufferSize);
-    return (result == PICC_STATUS_OK || result == PICC_STATUS_COLLISION);
+    MFRC522_WupAOrReqA(PICC_CMD_WUPA, bufferATQA, &bufferSize);
 }
 
 void MFRC522_buffTest() {
@@ -609,10 +608,24 @@ void MFRC522_GetType(Tag tag) {
 	}
 }
 
-uint8_t user1id[10] = {0x04, 0x25, 0x45, 0x3A, 0x25, 0x77, 0x80, 0x0, 0x0, 0x0};
-uint8_t user2id[10] = {0x04, 0xB9, 0xBf, 0x42, 0xF8, 0x73, 0x80, 0x0, 0x0, 0x0};
-uint8_t user3id[10] = {0x74, 0x01, 0xA1, 0xED, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
-uint8_t user4id[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user1aid[10] = {0x04, 0x25, 0x45, 0x3A, 0x25, 0x77, 0x80, 0x0, 0x0, 0x0};
+uint8_t user1bid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user1cid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+uint8_t user2aid[10] = {0x04, 0xB9, 0xBf, 0x42, 0xF8, 0x73, 0x80, 0x0, 0x0, 0x0};
+uint8_t user2bid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user2cid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+
+uint8_t user3aid[10] = {0x74, 0x01, 0xA1, 0xED, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user3bid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user3cid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
+
+uint8_t user4aid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user4bid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+uint8_t user4cid[10] = {0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0};
+
 
 bool PICC_ID_Equal(uint8_t id1[10], uint8_t id2[10]) {
 	for (int i = 0; i < 10; i++) {
@@ -623,6 +636,23 @@ bool PICC_ID_Equal(uint8_t id1[10], uint8_t id2[10]) {
 	return true;
 }
 
+#define TAG_USER1A (1 << 0)
+#define TAG_USER1B (1 << 1)
+#define TAG_SER1C (1 << 2)
+#define TAG_USER2A (1 << 3)
+#define TAG_USER2B (1 << 4)
+#define TAG_USER2C (1 << 5)
+#define TAG_USER3A (1 << 6)
+#define TAG_USER3B (1 << 7)
+#define TAG_USER3C (1 << 8)
+#define TAG_USER4A (1 << 9)
+#define TAG_USER4B (1 << 10)
+#define TAG_USER4D (1 << 11)
+#define TOKEN_USER1 (1 << 12)
+#define TOKEN_USER2 (1 << 13)
+#define TOKEN_USER3 (1 << 14)
+#define TOKEN_USER4 (1 << 15)
+
 Tag tags[5];
 void NFCTask(void *argument)
 {
@@ -631,6 +661,12 @@ void NFCTask(void *argument)
   for(;;)
   {
 	int i = 0;
+	int i_left = 0;
+	int i_entered = 0;
+
+    uint16_t left;
+	uint16_t entered;
+	uint16_t current;
 
 	while(MFRC522_IsNewCardPresent()) {
 		while(tags[i].present) {
@@ -641,14 +677,47 @@ void NFCTask(void *argument)
 			}
 		}
 		if (MFRC522_SelectStart(&tags[i]) == PICC_STATUS_OK) {
-			uart_printf("boop\r\n");
 
-			if (PICC_ID_Equal(tags[i].tag_id, user1id)) {
-				trigger_event(EVENT_SELECT_USER1);
+			if (PICC_ID_Equal(tags[i].tag_id, user1aid)) {
+				if (!(current & TOKEN_USER1)) {
+					trigger_event(EVENT_SELECT_USER1);
+				}
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				if (!(current & TOKEN_USER1)) {
+					current &=
+					trigger_event(EVENT_SELECT_USER1);
+				}
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				if (!(current & TOKEN_USER1)) {
+					trigger_event(EVENT_SELECT_USER1);
+				}
+
 			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
 				trigger_event(EVENT_SELECT_USER2);
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				trigger_event(EVENT_SELECT_USER2);
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				trigger_event(EVENT_SELECT_USER2);
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				trigger_event(EVENT_SELECT_USER2);
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				trigger_event(EVENT_SELECT_USER2);
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				trigger_event(EVENT_SELECT_USER2);
+
+			} else if (PICC_ID_Equal(tags[i].tag_id, user2id)) {
+				trigger_event(EVENT_SELECT_USER2);
+
 			} else if (PICC_ID_Equal(tags[i].tag_id, user3id)) {
 				trigger_event(EVENT_SELECT_USER3);
+
 			} else if (PICC_ID_Equal(tags[i].tag_id, user4id)) {
 				trigger_event(EVENT_SELECT_USER4);
 			}
@@ -663,6 +732,7 @@ void NFCTask(void *argument)
 			MFRC522_WakeupCards();
 			if (MFRC522_SelectStart(&tags[i]) == PICC_STATUS_TIMEOUT) {
 				tags[i].present = false;
+
 				memset(&tags[i], 0, sizeof(Tag));
 			} else {
 				MFRC522_Halt();
