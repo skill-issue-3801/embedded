@@ -10,7 +10,7 @@ This folder is used as the directory for any projects completed in the STM32Cube
 microcontrollers utilised ARM based MCUs.
 
 This is where the majority of the current implementation is taking place. The STM32 board
-interfaces with GPIO to provide user input, a NFC dev board for RFID based tag identification,
+interfaces with GPIO to provide user input, an NFC reader board for RFID based tag identification,
 and serial communication to send commands to a listening python script running
 on the Raspberry Pi that is displaying the website.
 
