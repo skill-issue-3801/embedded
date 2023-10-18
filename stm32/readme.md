@@ -16,7 +16,7 @@ This project utilises FreeRTOS to handle tasks such as reading from potentiomete
 The serial communication with the Rasberry Pi is handled by a FreeRTOS task, the communication uses the UART protocol. This exists in `/Core/Src/serial_manager.c`.
 
 ### GPIO Manager Task
-The FreeRTOS task that handles the physical controls exist in `/Core/Src/gpio_manager.c`. The buttons are triggered on interrupt, whilst the potentiometers are triggered on polling. See the list of hardware below.
+The FreeRTOS task that handles the physical controls exists in `/Core/Src/gpio_manager.c`. The buttons are triggered on interrupt, whilst the potentiometers are triggered on polling. See the list of hardware below.
 
 ### NFC Task
 The FreeRTOS tasks and Driver for the module exist entirely in the `/Core/Src/MRFC522.c` file, included by the `/Core/Inc/MRFC522.h` header file. The module connects to the STM32476rg using the I2C protocol. The implementation of this driver was influenced by the [Arduino driver](https://github.com/miguelbalboa/rfid/tree/master) for the same module. The FreeRTOS task detects when new tags have entered the RF field of the reader, and makes an exchange with the TAG to determine its ID, matching this with the internal user IDs saved in the code to determine which user has been detected.
@@ -47,10 +47,8 @@ As of current this just exists as an external power source for the NFC module. I
 SPST Switches are used as buttons, Potentiometers as dials, and Green LEDs as indicator lights, these are the main interface switches in the system. The buttons are used as user selection if an NFC tag is not usable. The potentiometers control the brightness of selected user events. The LEDS are used an an indication of which user is currently selected. Otherwise, the other switches are used for scrolling and viewing future and past weeks. 
 
 ## Pinout
-
-![STM32 Pinout](https://github.com/skill-issue-3801/embedded/commit/1a71f28aa0c20681efcfbfde3f00d60c052196df#diff-975a806cf763a690f30d49df6c19d82ce95dad4f620af300ec79da6affd9fbba)
-
 The pinout for the embedded systems is managed in the `/3801_Serial.ioc` file. Changing the pins in this file updates the pins used in all other files in the workspace. The defined pinout is as follows:
+![STM32 Pinout](https://github.com/skill-issue-3801/embedded/blob/main/stm32/7mJCf.png)
 #### SPST Switches
 * User 1 - PC10
 * User 2 - PC11
@@ -68,7 +66,10 @@ The pinout for the embedded systems is managed in the `/3801_Serial.ioc` file. C
 #### Potentiometers
 * Screen Brightness - PC0
 * User Brightness - PC1
+
 #### RFID Module
+<img src="piicodev-rfid-module-back-side-dimensions.jpg" alt="RFID Module Pinout" width="500"/>
+
 * SCL - PB6
 * SDA - PB7
 * IRQ - PA7
