@@ -6,7 +6,7 @@ embedded systems required for the project.
 Folder to contain any code used for AVR based microcontrollers. This does not currently play any part in the current implementation.
 
 ## STM32
-This folder is used as the directory for any projects completed in the STM32CubeIDE. This
+This folder is used as the directory for any projects completed in the STM32CubeIDE. These
 microcontrollers utilised ARM based MCUs.
 
 This is where the majority of the current implementation is taking place. The STM32 board
