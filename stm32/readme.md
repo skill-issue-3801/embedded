@@ -7,7 +7,20 @@ This the the STM32CubeIDE workspace for the embedded systems relating to the amb
 git clone git@github.com:skill-issue-3801/embedded.git
 ```
 
-Next, once you have [downloaded](https://www.st.com/en/development-tools/stm32cubeide.html) the IDE and cloned into the git repository. Open the IDE and select open workspace from the File dropdown menu. Select the STM32 folder in the git repository as the workspace. 
+Next, once you have [downloaded](https://www.st.com/en/development-tools/stm32cubeide.html) the IDE and cloned into the git repository. 
+
+Then, open the IDE and select open workspace from the File dropdown menu. 
+
+Finally, select the STM32 folder in the git repository as the workspace. You may start developing.
+
+### Uploading code
+Plug the STM32 into any USB port. 
+
+Press the build button in the tools bar.
+
+Press the upload (play) button in the tool bar.
+
+For step debugging, instead of pressing the upload button, use the run and debug button. (The play button with the bug)
 
 ## FreeRTOS
 This project utilises FreeRTOS to handle tasks such as reading from potentiometers and NFC cards and handling serial communication with the Pi concurrently.
