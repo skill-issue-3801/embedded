@@ -47,6 +47,9 @@ As of current this just exists as an external power source for the NFC module. I
 SPST Switches are used as buttons, Potentiometers as dials, and Green LEDs as indicator lights, these are the main interface switches in the system. The buttons are used as user selection if an NFC tag is not usable. The potentiometers control the brightness of selected user events. The LEDS are used an an indication of which user is currently selected. Otherwise, the other switches are used for scrolling and viewing future and past weeks. 
 
 ## Pinout
+
+![STM32 Pinout](https://github.com/skill-issue-3801/embedded/commit/1a71f28aa0c20681efcfbfde3f00d60c052196df#diff-975a806cf763a690f30d49df6c19d82ce95dad4f620af300ec79da6affd9fbba)
+
 The pinout for the embedded systems is managed in the `/3801_Serial.ioc` file. Changing the pins in this file updates the pins used in all other files in the workspace. The defined pinout is as follows:
 #### SPST Switches
 * User 1 - PC10
