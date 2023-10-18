@@ -3,7 +3,7 @@ This repository is to contain any and all code related to the implementation of 
 embedded systems required for the project.
 
 ## AVR
-Folder to contain any code used for AVR based microcontrollers.
+Folder to contain any code used for AVR based microcontrollers. This does not currently play any part in the current implementation.
 
 ## STM32
 This folder is used as the directory for any projects completed in the STM32CubeIDE. This
@@ -14,6 +14,10 @@ interfaces with GPIO to provide user input, a NFC dev board for RFID based tag i
 and serial communication to send commands to a listening python script running
 on the Raspberry Pi that is displaying the website.
 
+See the `/stm/README.md` for more information.
+
 ## Pi_serial
 Contains any python scripts to be run on the Raspberry Pi to communicate with the embedded systems
-microcontrollers that are handling user input.
+microcontrollers that are handling user input
+
+See `/pi_serial/README.md` for more information. 
