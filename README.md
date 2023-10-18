@@ -14,10 +14,11 @@ interfaces with GPIO to provide user input, a NFC dev board for RFID based tag i
 and serial communication to send commands to a listening python script running
 on the Raspberry Pi that is displaying the website.
 
-See the `/stm/README.md` for more information.
+See [`/stm32/README.md`](https://github.com/skill-issue-3801/embedded/tree/main/stm32) for more information.
 
 ## Pi_serial
 Contains any python scripts to be run on the Raspberry Pi to communicate with the embedded systems
 microcontrollers that are handling user input
 
-See `/pi_serial/README.md` for more information. 
+
+See [`/pi_serial/README.md`](https://github.com/skill-issue-3801/embedded/tree/main/pi_serial) for more information.
